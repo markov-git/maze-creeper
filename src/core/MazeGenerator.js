@@ -20,8 +20,13 @@ class MazeGenerator {
             .map((cell, index) => new MazeCell(index, y))
     }
 
-    createRightWalls(row) {
-        this.grid[row]
+    generateFirstRaw(rowNum) {
+        this.createRightWallsOfFirstRaw(rowNum)
+        this.createBottomWall(rowNum)
+    }
+
+    createRightWallsOfFirstRaw(rowNum) {
+        this.grid[rowNum]
             .forEach((cell, index, arr) => {
                 if (index && !this.hasPreviousCellRightWall(index, arr)) {
                     cell.id = arr[index - 1].id
@@ -30,8 +35,8 @@ class MazeGenerator {
             })
     }
 
-    createBottomWall(pos) {
-        const row = this.grid[pos]
+    createBottomWall(rowNum) {
+        const row = this.grid[rowNum]
         const spaces = this.countsOfFreeSpacesInRow(row)
         row.forEach(cell => {
             if (spaces[cell.id] > 1) {
@@ -61,9 +66,48 @@ class MazeGenerator {
         return arr[index - 1].border.right
     }
 
+    copyPreviousRowIDs(from, to) {
+        this.grid[from].forEach((cell, index) => {
+            if (!cell.border.bottom) {
+                this.grid[to][index].id = cell.id
+            }
+        })
+    }
+
+    generateRaw(rowNum) {
+        this.createRightWalls(rowNum)
+        this.createBottomWall(rowNum)
+    }
+
+    createRightWalls(rowNum) {
+        this.grid[rowNum]
+            .forEach((cell, index, arr) => {
+                if (index && !this.hasPreviousCellRightWall(index, arr)) {
+                    cell.id = arr[index - 1].id
+                }
+                let isRandomNextWall = !(index + 1 < arr.length && cell.id === arr[index + 1].id)
+                cell.createRandomRightWall(isRandomNextWall)
+            })
+    }
+
+    removeEndBorders() {
+        for (const row of this.grid) {
+            for (const cell of row) {
+                if (cell.x === this.cols - 1) cell.removeWall('right')
+                if (cell.y === this.rows - 1) cell.removeWall('bottom')
+            }
+        }
+    }
+
     generate() {
-        this.createRightWalls(this.generatingRowPos)
-        this.createBottomWall(this.generatingRowPos)
+        // first row
+        this.generateFirstRaw(this.generatingRowPos)
+        // secondary rows
+        for (let y = 1; y < this.rows; y++) {
+            this.copyPreviousRowIDs(this.generatingRowPos, ++this.generatingRowPos)
+            this.generateRaw(this.generatingRowPos)
+        }
+        this.removeEndBorders()
         return this.grid
     }
 

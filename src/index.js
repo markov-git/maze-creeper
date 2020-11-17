@@ -3,24 +3,40 @@ import {initMaze} from '@core/MazeGenerator'
 
 
 const cols = 10
-const rows = 2
+const rows = 10
 const maze = initMaze(cols, rows)
-// console.log(maze)
-//just for testing
-const cells = document.querySelectorAll('.cell')
-const normCells = [
-    [cells[0], cells[1], cells[2], cells[3], cells[4], cells[5], cells[6], cells[7], cells[8], cells[9]],
-    [cells[10], cells[11], cells[12], cells[13], cells[14], cells[15], cells[16], cells[17], cells[18], cells[19]]
-]
+
+const $app = document.querySelector('#app')
+const normCells = []
+
+const container = document.createElement('div')
+container.className = 'container'
+
+for (let y = 0; y<rows;y++) {
+    const $row = document.createElement('div')
+    $row.className = 'row'
+    const tempRow = []
+    for (let x = 0; x < cols; x++) {
+        const cell = document.createElement('div')
+        cell.className = 'cell'
+        $row.appendChild(cell)
+        tempRow.push(cell)
+    }
+    container.appendChild($row)
+    normCells.push(tempRow)
+}
+container.style.width = cols * 50 + 'px'
+container.style.border = 'black solid 2px'
+$app.appendChild(container)
 
 for (let y = 0; y < rows; y++) {
     for (let x = 0; x < cols; x++) {
-        if (maze[y][x].border.right){
+        if (maze[y][x].border.right) {
             normCells[y][x].style.borderRight = 'black solid 3px'
         }
-        if (maze[y][x].border.bottom){
+        if (maze[y][x].border.bottom) {
             normCells[y][x].style.borderBottom = 'black solid 3px'
         }
-        normCells[y][x].innerHTML = maze[y][x].id
+        // normCells[y][x].innerHTML = maze[y][x].id
     }
 }
