@@ -99,14 +99,21 @@ class MazeGenerator {
         }
     }
 
+    correctLastRaw() {
+        this.grid[this.rows - 1].forEach((cell, index, array) => {
+            if (index + 1 < this.cols && cell.id !== array[index + 1].id) {
+                cell.removeWall('right')
+            }
+        })
+    }
+
     generate() {
-        // first row
         this.generateFirstRaw(this.generatingRowPos)
-        // secondary rows
         for (let y = 1; y < this.rows; y++) {
             this.copyPreviousRowIDs(this.generatingRowPos, ++this.generatingRowPos)
             this.generateRaw(this.generatingRowPos)
         }
+        this.correctLastRaw()
         this.removeEndBorders()
         return this.grid
     }

@@ -2,8 +2,8 @@ import './styles/index.css'
 import {initMaze} from '@core/MazeGenerator'
 
 
-const cols = 10
-const rows = 10
+const cols = 15
+const rows = 15
 const maze = initMaze(cols, rows)
 
 const $app = document.querySelector('#app')
