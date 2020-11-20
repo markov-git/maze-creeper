@@ -1,4 +1,4 @@
-import {MazeCell} from "@core/MazeCell";
+import {MazeCell} from "@core/mazeGenerator/MazeCell";
 
 class MazeGenerator {
     constructor(cols, rows) {
