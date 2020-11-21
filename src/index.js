@@ -10,6 +10,9 @@ const $app = document.querySelector('#app')
 const $canvas = document.createElement('canvas')
 $app.appendChild($canvas)
 const shield = new Painter($canvas, maze)
+shield.init()
+shield.on()
+
 // const normCells = []
 //
 // const container = document.createElement('div')

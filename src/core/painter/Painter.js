@@ -1,5 +1,6 @@
 import {SHIELD_SIZE} from "@core/constants";
 import {toMatrix} from "@core/utils";
+import {Player} from "@core/painter/Player";
 
 export class Painter {
     constructor(canvas, initialMaze) {
@@ -8,42 +9,42 @@ export class Painter {
         this.initialMaze = initialMaze
         this.sizeX = (this.initialMaze[0].length * 2 + 1)
         this.sizeY = (this.initialMaze.length * 2 + 1)
+        this.matrixOfMaze = toMatrix(this.initialMaze, this.sizeX, this.sizeY)
         this.width = this.canvas.width = this.sizeX * SHIELD_SIZE
         this.height = this.canvas.height = this.sizeY * SHIELD_SIZE
-        this.images = {
-            img: [
-                {
-                    name: 'wallImage',
-                    src: 'img/wall32.png'
-                },
-            ],
-            prep: []
-        }
-        this.init()
+        this.wallImage = 'img/wall32.png'
+        this.imageWaiter = []
     }
 
-    init() {
+    async init() {
         this.initImages()
-        Promise.all(this.images.prep).then(this.prepare.bind(this))
+        await Promise.all(this.imageWaiter).then(this.prepare.bind(this))
     }
 
     prepare() {
         this.clear()
-
-
         for (let y = 0; y < this.sizeY; y++) {
             for (let x = 0; x < this.sizeX; x++) {
-                if (toMatrix(this.initialMaze, this.sizeX, this.sizeY)[y][x]) {
-                    this.context.drawImage(this.images.img[0].image, x * SHIELD_SIZE, y * SHIELD_SIZE)
+                if (this.matrixOfMaze[y][x]) {
+                    this.context.drawImage(this.wallImage,
+                        x * SHIELD_SIZE, y * SHIELD_SIZE)
                 }
             }
         }
     }
 
     on() {
-        // this.context.clearRect(0, 0, this.width, this.height)
+        this.prepare()
 
-        window.requestAnimationFrame(this.on)
+        this.updatePlayer()
+
+        window.requestAnimationFrame(this.on.bind(this))
+    }
+
+    updatePlayer() {
+        this.player = new Player({x:SHIELD_SIZE*1.5, y:SHIELD_SIZE*1.5})
+
+        this.player.draw(this.createCircle.bind(this))
     }
 
     clear() {
@@ -51,13 +52,20 @@ export class Painter {
         this.context.fillRect(0, 0, this.width, this.height)
     }
 
+    createCircle(x, y, rad, fill, color) {
+        this.context.fillStyle = this.context.strokeStyle = color;
+        this.context.beginPath();
+        this.context.arc(x, y, rad, 0, Math.PI * 2);
+        this.context.closePath();
+        fill ? this.context.fill() : this.context.stroke();
+    }
+
     initImages() {
-        for (const image of this.images.img) {
-            this.images.prep.push(new Promise((resolve => {
-                image.image = new Image()
-                image.image.src = image.src
-                image.image.addEventListener('load', resolve)
-            })))
-        }
+        const src = this.wallImage
+        this.wallImage = new Image()
+        this.wallImage.src = src
+        this.imageWaiter.push(new Promise(resolve => {
+            this.wallImage.addEventListener('load', resolve)
+        }))
     }
 }
