@@ -1,3 +1,5 @@
+import {SHIELD_SIZE} from "@core/constants";
+
 export function toMatrix(mazeConfig, sizeX, sizeY) {
     const config = normalizeConfig(mazeConfig)
     const matrix = []
@@ -27,4 +29,8 @@ function normalizeConfig(config) {
         configure.push(underRaw)
     }
     return configure
+}
+
+export function translateToCenter(pos){
+    return  {x: pos.x + SHIELD_SIZE * 0.5, y: pos.y + SHIELD_SIZE * 0.5}
 }

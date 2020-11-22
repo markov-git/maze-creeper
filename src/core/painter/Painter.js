@@ -1,23 +1,24 @@
-import {SHIELD_SIZE} from "@core/constants";
-import {toMatrix} from "@core/utils";
-import {Player} from "@core/painter/Player";
+import {SHIELD_SIZE} from "@core/constants"
 
 export class Painter {
-    constructor(canvas, initialMaze) {
+    constructor(canvas, {columns, rows, matrixOfMaze, boardWidth, boardHeight}) {
         this.canvas = canvas
         this.context = this.canvas.getContext('2d')
-        this.initialMaze = initialMaze
-        this.sizeX = (this.initialMaze[0].length * 2 + 1)
-        this.sizeY = (this.initialMaze.length * 2 + 1)
-        this.matrixOfMaze = toMatrix(this.initialMaze, this.sizeX, this.sizeY)
-        this.width = this.canvas.width = this.sizeX * SHIELD_SIZE
-        this.height = this.canvas.height = this.sizeY * SHIELD_SIZE
+
+        this.sizeX = columns
+        this.sizeY = rows
+        this.matrixOfMaze = matrixOfMaze
+        this.width = this.canvas.width = boardWidth
+        this.height = this.canvas.height = boardHeight
+
         this.wallImage = 'img/wall32.png'
         this.imageWaiter = []
     }
 
     async init() {
         this.initImages()
+
+
         await Promise.all(this.imageWaiter).then(this.prepare.bind(this))
     }
 
@@ -42,22 +43,42 @@ export class Painter {
     }
 
     updatePlayer() {
-        this.player = new Player({x:SHIELD_SIZE*1.5, y:SHIELD_SIZE*1.5})
-
-        this.player.draw(this.createCircle.bind(this))
+        this.player.draw(this.createPlayer.bind(this))
+        this.player.showWays(this.createWayRegion.bind(this))
     }
 
     clear() {
-        this.context.fillStyle = "#928fa4"
+        this.context.fillStyle = '#928fa4'
         this.context.fillRect(0, 0, this.width, this.height)
     }
 
-    createCircle(x, y, rad, fill, color) {
-        this.context.fillStyle = this.context.strokeStyle = color;
-        this.context.beginPath();
-        this.context.arc(x, y, rad, 0, Math.PI * 2);
-        this.context.closePath();
-        fill ? this.context.fill() : this.context.stroke();
+    addPlayer(player) {
+        this.player = player
+    }
+
+    updatePlayerMeta(player) {
+        this.player = player
+    }
+
+    createPlayer(x, y, rad, fill, color) {
+        this.applyColor(color)
+        this.context.beginPath()
+        this.context.arc(x, y, rad, 0, Math.PI * 2)
+        this.context.closePath()
+        fill ? this.context.fill() : this.context.stroke()
+    }
+
+    createWayRegion(regions, color) {
+        this.applyColor(color)
+        for (const region of regions) {
+            this.context.beginPath()
+            this.context.fillRect(region.x, region.y, SHIELD_SIZE, SHIELD_SIZE)
+            this.context.closePath()
+        }
+    }
+
+    applyColor(color) {
+        this.context.fillStyle = this.context.strokeStyle = color
     }
 
     initImages() {
