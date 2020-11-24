@@ -5,47 +5,50 @@ export class Player {
     constructor(prop, matrix) {
         this.position = {x: prop.x, y: prop.y}
         this.centerPosition = translateToCenter(this.position)
-        this.path = [this.position]
-        this.cavasProp = {
-            width: prop.width,
-            height: prop.height,
-            columns: prop.columns,
-            raws: prop.raws
-        }
+        this.path = [this.centerPosition]
+        this.foundedWalls = []
+        // this.cavasProp = {
+        //     width: prop.width,
+        //     height: prop.height,
+        //     columns: prop.columns,
+        //     raws: prop.raws
+        // }
         this.matrix = matrix
         this.emitMove = prop.emitMove
+        this.color = 'red'
     }
 
     move(dPos) {
-        this.position.x += dPos.x
-        this.position.y += dPos.y
-        this.centerPosition = translateToCenter(this.position)
-        this.path.push(this.position)
-
+        const nextX = Player.getPositionIndex(this.centerPosition.x + dPos.x)
+        const nextY = Player.getPositionIndex(this.centerPosition.y + dPos.y)
+        if (!this.matrix[nextY][nextX]) {
+            this.position.x += dPos.x
+            this.position.y += dPos.y
+            this.centerPosition = translateToCenter(this.position)
+            this.path.push(this.centerPosition)
+        } else {
+            this.addWall({x: this.centerPosition.x + dPos.x, y: this.centerPosition.y + dPos.y})
+        }
         this.emitMove(this)
     }
 
-    draw(action) {
-        action(this.centerPosition.x, this.centerPosition.y,
-            SHIELD_SIZE / 3, true, 'red')
+    addWall(pos) {
+        if (!this.foundedWalls.map(pos => JSON.stringify(pos)).includes(JSON.stringify(pos))) {
+            this.foundedWalls.push({
+                x: Player.getPositionIndex(pos.x),
+                y: Player.getPositionIndex(pos.y)
+            })
+        }
     }
 
-    showWays(action) {
-        const availablePos = []
-        const shieldSize = this.cavasProp.height / this.cavasProp.raws
-        const rightPos = {x: this.position.x + SHIELD_SIZE, y: this.position.y}
-        const topPos = {x: this.position.x, y: this.position.y - SHIELD_SIZE}
-        const leftPos = {x: this.position.x - SHIELD_SIZE, y: this.position.y}
-        const bottomPos = {x: this.position.x, y: this.position.y + SHIELD_SIZE}
+    static getPositionIndex(pos) {
+        return Math.floor(pos / SHIELD_SIZE)
+    }
 
-        const y = Math.floor(this.centerPosition.y / shieldSize)
-        const x = Math.floor(this.centerPosition.x / shieldSize)
-
-        if (!this.matrix[y][x + 1]) availablePos.push(rightPos)
-        if (!this.matrix[y - 1][x]) availablePos.push(topPos)
-        if (!this.matrix[y][x - 1]) availablePos.push(leftPos)
-        if (!this.matrix[y + 1][x]) availablePos.push(bottomPos)
-
-        action(availablePos, 'rgb(48,105,49, 0.5)')
+    get positionIndexes() {
+        return {
+            x: Player.getPositionIndex(this.centerPosition.x),
+            y: Player.getPositionIndex(this.centerPosition.y)
+        }
     }
 }

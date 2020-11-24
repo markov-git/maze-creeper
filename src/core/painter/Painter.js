@@ -4,21 +4,30 @@ export class Painter {
     constructor(canvas, {columns, rows, matrixOfMaze, boardWidth, boardHeight}) {
         this.canvas = canvas
         this.context = this.canvas.getContext('2d')
-
         this.sizeX = columns
         this.sizeY = rows
         this.matrixOfMaze = matrixOfMaze
+        this.matrixOfFog = Painter.generateMatrixOfFog(matrixOfMaze)
         this.width = this.canvas.width = boardWidth
         this.height = this.canvas.height = boardHeight
-
+        this.regionColor = 'rgb(48,105,49, 0.5)'
+        this.pathColor = 'black'
         this.wallImage = 'img/wall32.png'
         this.imageWaiter = []
     }
 
+    static generateMatrixOfFog(matrix) {
+        return matrix.map((row, y, rows) => {
+            if (y !== 0 && y !== rows.length - 1) {
+                return row.map((_, x, cells) => x !== 0 && x !== cells.length - 1)
+            } else {
+                return row.map(_ => false)
+            }
+        })
+    }
+
     async init() {
         this.initImages()
-
-
         await Promise.all(this.imageWaiter).then(this.prepare.bind(this))
     }
 
@@ -39,12 +48,14 @@ export class Painter {
 
         this.updatePlayer()
 
+        this.drawFog()
+
         window.requestAnimationFrame(this.on.bind(this))
     }
 
     updatePlayer() {
-        this.player.draw(this.createPlayer.bind(this))
-        this.player.showWays(this.createWayRegion.bind(this))
+        this.drawPlayerPath()
+        this.drawPlayer()
     }
 
     clear() {
@@ -54,27 +65,65 @@ export class Painter {
 
     addPlayer(player) {
         this.player = player
+        this.removeSomeFog()
     }
 
     updatePlayerMeta(player) {
         this.player = player
+        this.removeSomeFog()
     }
 
-    createPlayer(x, y, rad, fill, color) {
-        this.applyColor(color)
-        this.context.beginPath()
-        this.context.arc(x, y, rad, 0, Math.PI * 2)
-        this.context.closePath()
-        fill ? this.context.fill() : this.context.stroke()
+    removeSomeFog() {
+        const xIndex = this.player.positionIndexes.x
+        const yIndex = this.player.positionIndexes.y
+        this.matrixOfFog[yIndex][xIndex] = false
+
+        const walls = this.player.foundedWalls
+        if (walls) {
+            walls.forEach(wall => {
+                this.matrixOfFog[wall.y][wall.x] = false
+            })
+        }
     }
 
-    createWayRegion(regions, color) {
-        this.applyColor(color)
-        for (const region of regions) {
+    drawFog() {
+        this.applyColor('slategrey')
+        for (let y = 0; y < this.matrixOfFog.length; y++) {
+            for (let x = 0; x < this.matrixOfFog[y].length; x++) {
+                if (this.matrixOfFog[y][x]) {
+                    this.context.beginPath()
+                    this.context.fillRect(x * SHIELD_SIZE, y * SHIELD_SIZE, SHIELD_SIZE, SHIELD_SIZE)
+                    this.context.closePath()
+                }
+            }
+        }
+    }
+
+    drawPlayerPath() {
+        const path = this.player.path
+        if (path.length > 1) {
+            this.applyColor(this.pathColor)
+            this.context.lineCap = "round"
+            this.context.setLineDash([10, 12])
+            this.context.lineWidth = 3
             this.context.beginPath()
-            this.context.fillRect(region.x, region.y, SHIELD_SIZE, SHIELD_SIZE)
+
+            this.context.moveTo(path[0].x, path[0].y)
+            for (let step = 1; step < path.length; step++) {
+                this.context.lineTo(path[step].x, path[step].y)
+            }
+            this.context.stroke()
             this.context.closePath()
         }
+    }
+
+    drawPlayer() {
+        this.applyColor(this.player.color)
+        this.context.beginPath()
+        this.context.arc(this.player.centerPosition.x, this.player.centerPosition.y,
+            SHIELD_SIZE / 3, 0, Math.PI * 2)
+        this.context.closePath()
+        this.context.fill()
     }
 
     applyColor(color) {

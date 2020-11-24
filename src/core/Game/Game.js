@@ -33,31 +33,34 @@ export class Game {
         })
 
         document.addEventListener('keydown', event => {
-            event.preventDefault()
             switch (event.key) {
                 case 'ArrowRight':
                     this.player.move({
                         x: SHIELD_SIZE,
                         y: 0
                     })
+                    event.preventDefault()
                     break
                 case 'ArrowUp':
                     this.player.move({
                         x: 0,
                         y: -SHIELD_SIZE
                     })
+                    event.preventDefault()
                     break
                 case 'ArrowLeft':
                     this.player.move({
                         x: -SHIELD_SIZE,
                         y: 0
                     })
+                    event.preventDefault()
                     break
                 case 'ArrowDown':
                     this.player.move({
                         x: 0,
                         y: SHIELD_SIZE
                     })
+                    event.preventDefault()
                     break
             }
         })
