@@ -1,6 +1,4 @@
 import './styles/index.css'
-import {initMaze} from '@core/mazeGenerator/MazeGenerator'
-import {Painter} from '@core/painter/Painter'
 import {Game} from "@core/Game/Game";
 
 const $app = document.querySelector('#app')
@@ -10,5 +8,4 @@ $app.appendChild($canvas)
 const cols = 5
 const rows = 5
 
-const firstBoard = new Game({cols, rows}, $canvas)
-firstBoard.init()
+const firstBoard = new Game({cols, rows}, $canvas, false)

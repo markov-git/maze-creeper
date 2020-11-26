@@ -4,8 +4,8 @@ export class Painter {
     constructor(canvas, {columns, rows, matrixOfMaze, boardWidth, boardHeight}) {
         this.canvas = canvas
         this.context = this.canvas.getContext('2d')
-        this.sizeX = columns
-        this.sizeY = rows
+        this.columns = columns
+        this.rows = rows
         this.matrixOfMaze = matrixOfMaze
         this.matrixOfFog = Painter.generateMatrixOfFog(matrixOfMaze)
         this.width = this.canvas.width = boardWidth
@@ -33,8 +33,8 @@ export class Painter {
 
     prepare() {
         this.clear()
-        for (let y = 0; y < this.sizeY; y++) {
-            for (let x = 0; x < this.sizeX; x++) {
+        for (let y = 0; y < this.rows; y++) {
+            for (let x = 0; x < this.columns; x++) {
                 if (this.matrixOfMaze[y][x]) {
                     this.context.drawImage(this.wallImage,
                         x * SHIELD_SIZE, y * SHIELD_SIZE)
