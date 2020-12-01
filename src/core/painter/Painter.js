@@ -13,6 +13,7 @@ export class Painter {
         this.regionColor = 'rgb(48,105,49, 0.5)'
         this.pathColor = 'black'
         this.wallImage = 'img/wall32.png'
+        this.pathImage = 'img/floor32.png'
         this.imageWaiter = []
     }
 
@@ -37,6 +38,9 @@ export class Painter {
             for (let x = 0; x < this.columns; x++) {
                 if (this.matrixOfMaze[y][x]) {
                     this.context.drawImage(this.wallImage,
+                        x * SHIELD_SIZE, y * SHIELD_SIZE)
+                } else {
+                    this.context.drawImage(this.pathImage,
                         x * SHIELD_SIZE, y * SHIELD_SIZE)
                 }
             }
@@ -131,11 +135,17 @@ export class Painter {
     }
 
     initImages() {
-        const src = this.wallImage
+        const srcWall = this.wallImage
         this.wallImage = new Image()
-        this.wallImage.src = src
+        this.wallImage.src = srcWall
         this.imageWaiter.push(new Promise(resolve => {
             this.wallImage.addEventListener('load', resolve)
+        }))
+        const srcFloor = this.pathImage
+        this.pathImage = new Image()
+        this.pathImage.src = srcFloor
+        this.imageWaiter.push(new Promise(resolve => {
+            this.pathImage.addEventListener('load', resolve)
         }))
     }
 }

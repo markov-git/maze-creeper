@@ -1,18 +1,35 @@
-import {SHIELD_SIZE} from "@core/constants";
-
 export function localCoords(canvas, event) {
-    const rect = canvas.getBoundingClientRect();
+    const rect = canvas.getBoundingClientRect()
     return {
         x: event.clientX - rect.left,
         y: event.clientY - rect.top,
     }
 }
 
-export function testInside({x, y}, currentPos) {
-    const x1 = currentPos.x
-    const y1 = currentPos.y
-    const x2 = x1 + SHIELD_SIZE
-    const y2 = y1 + SHIELD_SIZE
+export function testInside({x, y}, rect) {
+    return x >= rect.x
+        && x <= rect.x + rect.width
+        && y >= rect.y
+        && y <= rect.y + rect.height
+}
 
-    return x > x1 && x < x2 && y > y1 && y < y2
+export function freeSpaceMatrix(matrixOfMaze) {
+    const matrix = []
+    for (let row = 0; row < matrixOfMaze.length; row++) {
+        matrix.push(matrixOfMaze[row].map(cell => !cell))
+    }
+    return matrix
+}
+
+export function aroundPos(row, col) {
+    return [
+        // {row: [row - 1], col: [col - 1]},
+        {row: [row - 1], col: [col]},
+        // {row: [row - 1], col: [col + 1]},
+        {row: [row], col: [col - 1]},
+        {row: [row], col: [col + 1]},
+        // {row: [row + 1], col: [col - 1]},
+        {row: [row + 1], col: [col]},
+        // {row: [row + 1], col: [col + 1]}
+        ]
 }
