@@ -15,6 +15,7 @@ export class Painter {
         this.wallImage = 'img/wall32.png'
         this.pathImage = 'img/floor32.png'
         this.imageWaiter = []
+        this.pathMatrix = new Array(this.rows).fill('').map(_ => new Array(this.columns).fill(false))
     }
 
     static generateMatrixOfFog(matrix) {
@@ -49,11 +50,8 @@ export class Painter {
 
     on() {
         this.prepare()
-
         this.updatePlayer()
-
         this.drawFog()
-
         window.requestAnimationFrame(this.on.bind(this))
     }
 
@@ -81,7 +79,6 @@ export class Painter {
         const xIndex = this.player.positionIndexes.x
         const yIndex = this.player.positionIndexes.y
         this.matrixOfFog[yIndex][xIndex] = false
-
         const walls = this.player.foundedWalls
         if (walls) {
             walls.forEach(wall => {
@@ -111,7 +108,6 @@ export class Painter {
             this.context.setLineDash([10, 12])
             this.context.lineWidth = 3
             this.context.beginPath()
-
             this.context.moveTo(path[0].x, path[0].y)
             for (let step = 1; step < path.length; step++) {
                 this.context.lineTo(path[step].x, path[step].y)

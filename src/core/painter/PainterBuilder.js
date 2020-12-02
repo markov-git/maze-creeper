@@ -1,15 +1,17 @@
 import {Painter} from "@core/painter/Painter";
 import {SHIELD_SIZE} from "@core/constants";
 import {aroundPos, freeSpaceMatrix, localCoords, testInside} from "@core/painter/painter.coordinats";
+import {fillMatrix, invertMatrix} from "@core/painter/painter.matrixLogic";
 
 export class PainterBuilder extends Painter {
     constructor(canvas, props) {
         super(canvas, props)
         this.gameIsReady = props.gameIsReady
-        this.spaceMatrix = freeSpaceMatrix(this.matrixOfMaze)
-        this.pathMatrix = new Array(this.rows).fill('').map(_ => new Array(this.columns).fill(false))
         if (!this.gameIsReady) {
+            this.spaceMatrix = freeSpaceMatrix(this.matrixOfMaze)
             this.initBuilder()
+        } else {
+            this.pathMatrix = invertMatrix(this.matrixOfMaze)
         }
     }
 
@@ -31,20 +33,21 @@ export class PainterBuilder extends Painter {
 
     on() {
         this.prepare()
-
         if (this.gameIsReady) {
             this.updatePlayer()
-
             this.drawFog()
         } else {
             this.drawInterface()
-
             if (this.interfaceWall.clicked) {
                 this.drawFreePositions()
             }
-
+            if (this.checkIsGeneratedMaze()) {
+                this.canvas.removeEventListener('click', this.onclick)
+                this.interfaceWall.clicked = false
+                this.gameIsReady = true
+                this.canvas.height = this.canvas.height - 3 * SHIELD_SIZE
+            }
         }
-
         window.requestAnimationFrame(this.on.bind(this))
     }
 
@@ -83,7 +86,6 @@ export class PainterBuilder extends Painter {
             height: SHIELD_SIZE,
             clicked: false
         }
-
         this.onclick = event => {
             const mousePos = localCoords(this.canvas, event)
             if (testInside(mousePos, this.interfaceWall)) {
@@ -93,7 +95,6 @@ export class PainterBuilder extends Painter {
                 this.updateMatrix(mousePos)
             }
         }
-
         this.canvas.addEventListener('click', this.onclick)
     }
 
@@ -117,15 +118,8 @@ export class PainterBuilder extends Painter {
     }
 
     recalculateSpaces() {
-        const factureOfSpaces = this.spaceMatrix.map(row => {
-            return row.map(_ => 0)
-        })
-        for (let row = 0; row < this.spaceMatrix.length; row++) {
-            for (let col = 0; col < this.spaceMatrix[row].length; col++) {
-                this.spaceMatrix[row][col] = false
-            }
-        }
-
+        const factureOfSpaces = fillMatrix(this.spaceMatrix, 0)
+        this.spaceMatrix = fillMatrix(this.spaceMatrix, false)
         for (let row = 0; row < this.spaceMatrix.length; row++) {
             for (let col = 0; col < this.spaceMatrix[row].length; col++) {
                 if (this.pathMatrix[row][col]) {
@@ -140,11 +134,17 @@ export class PainterBuilder extends Painter {
                 }
             }
         }
-        if (this.checkIsGeneratedMaze()) {
-            this.canvas.removeEventListener('click', this.onclick)
-            this.interfaceWall.clicked = false
-            this.gameIsReady = true
-            this.canvas.height = this.canvas.height - 3 * SHIELD_SIZE
+
+        for (let row = 1; row < this.matrixOfMaze.length - 1; row++) {
+            for (let col = 1; col < this.matrixOfMaze[row].length - 1; col++) {
+                let b = true
+                aroundPos(row, col).forEach(pos => {
+                    b = b ? this.matrixOfMaze[pos.row][pos.col] : b
+                })
+                if (b) {
+                    this.matrixOfMaze[row][col] = b
+                }
+            }
         }
     }
 
@@ -152,8 +152,7 @@ export class PainterBuilder extends Painter {
         let res = true
         for (let row = 0; row < this.rows; row++) {
             for (let col = 0; col < this.columns; col++) {
-                if (!this.matrixOfMaze[row][col] && !this.pathMatrix[row][col])
-                    res = false
+                if (!this.matrixOfMaze[row][col] && !this.pathMatrix[row][col]) res = false
             }
         }
         return res
