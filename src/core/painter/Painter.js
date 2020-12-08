@@ -1,4 +1,6 @@
 import {SHIELD_SIZE} from "@core/constants"
+import {fillMatrix} from "@core/painter/painter.matrixLogic";
+import {Player} from "@core/Game/Player";
 
 export class Painter {
     constructor(canvas, {columns, rows, matrixOfMaze, boardWidth, boardHeight}) {
@@ -8,12 +10,17 @@ export class Painter {
         this.rows = rows
         this.matrixOfMaze = matrixOfMaze
         this.matrixOfFog = Painter.generateMatrixOfFog(matrixOfMaze)
+        this.matrixOfGameElements = fillMatrix(matrixOfMaze, '')
         this.width = this.canvas.width = boardWidth
         this.height = this.canvas.height = boardHeight
         this.regionColor = 'rgb(48,105,49, 0.5)'
         this.pathColor = 'black'
-        this.wallImage = 'img/wall32.png'
-        this.pathImage = 'img/floor32.png'
+        this.images = {
+            wallImage: 'img/wall32.png',
+            pathImage: 'img/floor32.png',
+            activeExitImage: 'img/aExit32.png',
+            passiveExitImage: 'img/pExit32.png'
+        }
         this.imageWaiter = []
         this.pathMatrix = new Array(this.rows).fill('').map(_ => new Array(this.columns).fill(false))
     }
@@ -38,10 +45,10 @@ export class Painter {
         for (let y = 0; y < this.rows; y++) {
             for (let x = 0; x < this.columns; x++) {
                 if (this.matrixOfMaze[y][x]) {
-                    this.context.drawImage(this.wallImage,
+                    this.context.drawImage(this.images.wallImage,
                         x * SHIELD_SIZE, y * SHIELD_SIZE)
                 } else {
-                    this.context.drawImage(this.pathImage,
+                    this.context.drawImage(this.images.pathImage,
                         x * SHIELD_SIZE, y * SHIELD_SIZE)
                 }
             }
@@ -73,6 +80,14 @@ export class Painter {
     updatePlayerMeta(player) {
         this.player = player
         this.removeSomeFog()
+    }
+
+    addGameElement(element, pos) {
+        if (this.matrixOfGameElements[pos.row][pos.col] === '' && !this.matrixOfMaze[pos.row][pos.col]) {
+            this.matrixOfGameElements[pos.row][pos.col] = element
+            this.pathMatrix[pos.row][pos.col] = false
+            return true
+        } else return false
     }
 
     removeSomeFog() {
@@ -131,17 +146,13 @@ export class Painter {
     }
 
     initImages() {
-        const srcWall = this.wallImage
-        this.wallImage = new Image()
-        this.wallImage.src = srcWall
-        this.imageWaiter.push(new Promise(resolve => {
-            this.wallImage.addEventListener('load', resolve)
-        }))
-        const srcFloor = this.pathImage
-        this.pathImage = new Image()
-        this.pathImage.src = srcFloor
-        this.imageWaiter.push(new Promise(resolve => {
-            this.pathImage.addEventListener('load', resolve)
-        }))
+        for (const key of Object.keys(this.images)) {
+            const src = this.images[key]
+            this.images[key] = new Image()
+            this.images[key].src = src
+            this.imageWaiter.push(new Promise(resolve => {
+                this.images[key].addEventListener('load', resolve)
+            }))
+        }
     }
 }

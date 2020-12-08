@@ -1,10 +1,10 @@
 import {initMaze} from "@core/mazeGenerator/MazeGenerator"
-import {Painter} from "@core/painter/Painter"
 import {Player} from "@core/Game/Player"
 import {SHIELD_SIZE} from "@core/constants"
 import {initialMatrix, toMatrix} from "@core/utils"
 import {Emitter} from "@core/Emitter";
 import {PainterBuilder} from "@core/painter/PainterBuilder";
+import {aroundPos} from "@core/painter/painter.coordinats";
 
 export class Game {
     constructor({cols, rows}, $canvas, random) {
@@ -52,10 +52,11 @@ export class Game {
                 }
             }, this.matrixOfMaze)
         this.board.addPlayer(this.player)
-
-
+        if (this.isReady) {
+            this.addElementsToRandomPos()
+        }
         ////////////////////////
-        // Нужно сделать добавление событий при условии старта игры
+        // Нужно сделать добавление событий при выполнении условия старта игры
         ////////////////////////
         this.unsub = this.emitter.subscribe('move', player => {
             this.board.updatePlayerMeta(player)
@@ -64,6 +65,17 @@ export class Game {
         ////////////////////////
 
         this.board.on(this.player)
+    }
+
+    addElementsToRandomPos() {
+        const col = 5 + Math.floor(Math.random() * (this.columns - 5))
+        const row = 5 + Math.floor(Math.random() * (this.rows - 5))
+        if (!this.board.addGameElement('passiveExitImage', {col, row})) {
+            for (const arPos of aroundPos(row, col)) {
+                if (this.board.addGameElement('passiveExitImage', {row: arPos.row, col: arPos.col})) break
+            }
+        }
+
     }
 
     addEventListeners() {

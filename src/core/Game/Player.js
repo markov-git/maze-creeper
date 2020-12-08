@@ -7,15 +7,23 @@ export class Player {
         this.centerPosition = translateToCenter(this.position)
         this.path = [this.centerPosition]
         this.foundedWalls = []
-        // this.cavasProp = {
-        //     width: prop.width,
-        //     height: prop.height,
-        //     columns: prop.columns,
-        //     raws: prop.raws
-        // }
         this.matrix = matrix
         this.emitMove = prop.emitMove
         this.color = 'red'
+        this.testPosition()
+    }
+
+    testPosition() {
+        if (this.matrix[this.positionIndexes.y][this.positionIndexes.x]) {
+            if (!this.matrix[this.positionIndexes.y][this.positionIndexes.x + 1]) {
+                this.position.x += SHIELD_SIZE
+                this.centerPosition = translateToCenter(this.position)
+            } else {
+                this.position.y += SHIELD_SIZE
+                this.centerPosition = translateToCenter(this.position)
+            }
+            this.path[0] = this.centerPosition
+        }
     }
 
     move(dPos) {

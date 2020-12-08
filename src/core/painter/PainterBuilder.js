@@ -20,11 +20,15 @@ export class PainterBuilder extends Painter {
         for (let y = 0; y < this.rows; y++) {
             for (let x = 0; x < this.columns; x++) {
                 if (this.matrixOfMaze[y][x]) {
-                    this.context.drawImage(this.wallImage,
+                    this.context.drawImage(this.images.wallImage,
                         x * SHIELD_SIZE, y * SHIELD_SIZE)
                 }
                 if (this.pathMatrix[y][x]) {
-                    this.context.drawImage(this.pathImage,
+                    this.context.drawImage(this.images.pathImage,
+                        x * SHIELD_SIZE, y * SHIELD_SIZE)
+                }
+                if (this.matrixOfGameElements[y][x] !== '' && this.gameIsReady) {
+                    this.context.drawImage(this.images[this.matrixOfGameElements[y][x]],
                         x * SHIELD_SIZE, y * SHIELD_SIZE)
                 }
             }
@@ -34,6 +38,7 @@ export class PainterBuilder extends Painter {
     on() {
         this.prepare()
         if (this.gameIsReady) {
+
             this.updatePlayer()
             this.drawFog()
         } else {
@@ -52,7 +57,7 @@ export class PainterBuilder extends Painter {
     }
 
     drawInterface() {
-        this.context.drawImage(this.pathImage,
+        this.context.drawImage(this.images.pathImage,
             this.interfaceWall.x, this.interfaceWall.y)
         if (this.interfaceWall.clicked) {
             this.applyColor('red')
@@ -155,6 +160,7 @@ export class PainterBuilder extends Painter {
                 if (!this.matrixOfMaze[row][col] && !this.pathMatrix[row][col]) res = false
             }
         }
+        this.player.testPosition()
         return res
     }
 }
