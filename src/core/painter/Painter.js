@@ -1,6 +1,5 @@
 import {SHIELD_SIZE} from "@core/constants"
 import {fillMatrix} from "@core/painter/painter.matrixLogic";
-import {Player} from "@core/Game/Player";
 
 export class Painter {
     constructor(canvas, {columns, rows, matrixOfMaze, boardWidth, boardHeight}) {
