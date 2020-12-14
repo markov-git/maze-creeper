@@ -7,12 +7,16 @@ import {PainterBuilder} from "@core/painter/PainterBuilder";
 import {aroundPos} from "@core/painter/painter.coordinats";
 
 export class Game {
-    constructor({cols, rows}, $canvas, random) {
+    constructor(cols, rows, $canvas, random, fogOfWar, botMode, mazeMatrix, emit) {
         this.maze = initMaze(cols, rows)
+        this.readyMaze = mazeMatrix
         this.columns = this.maze[0].length * 2 + 1
         this.rows = this.maze.length * 2 + 1
-        if (random) {
-            this.matrixOfMaze = toMatrix(this.maze, this.columns, this.rows)
+        this.fogOfWar = fogOfWar
+        this.botMode = botMode
+        if (random || this.readyMaze) {
+            this.matrixOfMaze = this.readyMaze ? this.readyMaze : toMatrix(this.maze, this.columns, this.rows)
+
             this.boardWidth = this.columns * SHIELD_SIZE
             this.boardHeight = this.rows * SHIELD_SIZE
             this.isReady = random
@@ -21,10 +25,11 @@ export class Game {
             this.boardWidth = this.columns * SHIELD_SIZE
             this.boardHeight = this.rows * SHIELD_SIZE + 3 * SHIELD_SIZE
             this.isReady = random
+            this.emit = emit
         }
         this.$canvas = $canvas
         this.emitter = new Emitter()
-
+        this.unsubs = []
         this.init()
     }
 
@@ -35,9 +40,10 @@ export class Game {
             matrixOfMaze: this.matrixOfMaze,
             boardWidth: this.boardWidth,
             boardHeight: this.boardHeight,
-            gameIsReady: this.isReady
+            gameIsReady: this.isReady,
+            fogOfWar: this.fogOfWar,
+            emitFinishMaze: this.emit
         })
-        this.board.init()
 
         this.player = new Player(
             {
@@ -58,21 +64,23 @@ export class Game {
         ////////////////////////
         // Нужно сделать добавление событий при выполнении условия старта игры
         ////////////////////////
-        this.unsub = this.emitter.subscribe('move', player => {
-            this.board.updatePlayerMeta(player)
-        })
-        this.addEventListeners()
+        if (!this.botMode) {
+            this.unsubs.push(this.emitter.subscribe('move', player => {
+                this.board.updatePlayerMeta(player)
+            }))
+            this.addEventListeners()
+        }
         ////////////////////////
 
         this.board.on(this.player)
     }
 
     addElementsToRandomPos() {
-        const col = 5 + Math.floor(Math.random() * (this.columns - 5))
-        const row = 5 + Math.floor(Math.random() * (this.rows - 5))
+        const col = 4 + Math.floor(Math.random() * (this.columns - 5))
+        const row = 4 + Math.floor(Math.random() * (this.rows - 5))
         if (!this.board.addGameElement('passiveExitImage', {col, row})) {
             for (const arPos of aroundPos(row, col)) {
-                if (this.board.addGameElement('passiveExitImage', {row: arPos.row, col: arPos.col})) break
+                if (this.board.addGameElement('passiveExitImage', {row: arPos.row[0], col: arPos.col[0]})) break
             }
         }
 

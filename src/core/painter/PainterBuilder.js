@@ -6,13 +6,16 @@ import {fillMatrix, invertMatrix} from "@core/painter/painter.matrixLogic";
 export class PainterBuilder extends Painter {
     constructor(canvas, props) {
         super(canvas, props)
+        this.fogOfWar = props.fogOfWar
         this.gameIsReady = props.gameIsReady
+        this.emitFinishMaze = props.emitFinishMaze
         if (!this.gameIsReady) {
             this.spaceMatrix = freeSpaceMatrix(this.matrixOfMaze)
             this.initBuilder()
         } else {
             this.pathMatrix = invertMatrix(this.matrixOfMaze)
         }
+        this.init()
     }
 
     prepare() {
@@ -40,7 +43,9 @@ export class PainterBuilder extends Painter {
         if (this.gameIsReady) {
 
             this.updatePlayer()
-            this.drawFog()
+            if (this.fogOfWar) {
+                this.drawFog()
+            }
         } else {
             this.drawInterface()
             if (this.interfaceWall.clicked) {
@@ -51,6 +56,7 @@ export class PainterBuilder extends Painter {
                 this.interfaceWall.clicked = false
                 this.gameIsReady = true
                 this.canvas.height = this.canvas.height - 3 * SHIELD_SIZE
+                this.emitFinishMaze(this.matrixOfMaze)
             }
         }
         window.requestAnimationFrame(this.on.bind(this))
