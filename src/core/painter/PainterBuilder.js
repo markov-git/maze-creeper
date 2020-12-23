@@ -30,7 +30,7 @@ export class PainterBuilder extends Painter {
                     this.context.drawImage(this.images.pathImage,
                         x * SHIELD_SIZE, y * SHIELD_SIZE)
                 }
-                if (this.matrixOfGameElements[y][x] !== '' && this.gameIsReady) {
+                if (this.matrixOfGameElements[y][x] && this.gameIsReady) {
                     this.context.drawImage(this.images[this.matrixOfGameElements[y][x]],
                         x * SHIELD_SIZE, y * SHIELD_SIZE)
                 }

@@ -36,6 +36,8 @@ export class Player {
             this.path.push(this.centerPosition)
         } else {
             this.addWall({x: this.centerPosition.x + dPos.x, y: this.centerPosition.y + dPos.y})
+            // dev
+            console.log(`Oh it's a wall, opponent's move`)
         }
         this.emitMove(this)
     }

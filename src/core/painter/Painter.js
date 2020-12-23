@@ -18,7 +18,10 @@ export class Painter {
             wallImage: 'img/wall32.png',
             pathImage: 'img/floor32.png',
             activeExitImage: 'img/aExit32.png',
-            passiveExitImage: 'img/pExit32.png'
+            passiveExitImage: 'img/pExit32.png',
+            keyImage: 'img/key32.png',
+            ropeImage: 'img/rope32.png',
+            trapImage: 'img/trap32.png'
         }
         this.imageWaiter = []
         this.pathMatrix = new Array(this.rows).fill('').map(_ => new Array(this.columns).fill(false))
@@ -62,7 +65,7 @@ export class Painter {
     }
 
     updatePlayer() {
-        this.drawPlayerPath()
+        // this.drawPlayerPath() Выглядит неочень
         this.drawPlayer()
     }
 
@@ -82,11 +85,25 @@ export class Painter {
     }
 
     addGameElement(element, pos) {
-        if (this.matrixOfGameElements[pos.row][pos.col] === '' && !this.matrixOfMaze[pos.row][pos.col]) {
+        if (!this.matrixOfGameElements[pos.row][pos.col] && !this.matrixOfMaze[pos.row][pos.col]) {
             this.matrixOfGameElements[pos.row][pos.col] = element
             this.pathMatrix[pos.row][pos.col] = false
             return true
         } else return false
+    }
+
+    unlockExit() {
+        for (let row = 0; row < this.matrixOfGameElements.length; row++) {
+            const i = this.matrixOfGameElements[row].findIndex(el => el === 'passiveExitImage')
+            if (i !== -1) {
+                this.matrixOfGameElements[row][i] = 'activeExitImage'
+                break
+            }
+        }
+    }
+
+    getCurrentGameElement(pos) {
+        return this.matrixOfGameElements[pos.y][pos.x]
     }
 
     removeSomeFog() {

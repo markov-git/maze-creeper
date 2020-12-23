@@ -2,9 +2,9 @@ import {initMaze} from "@core/mazeGenerator/MazeGenerator"
 import {Player} from "@core/Game/Player"
 import {SHIELD_SIZE} from "@core/constants"
 import {initialMatrix, toMatrix} from "@core/utils"
-import {Emitter} from "@core/Emitter";
-import {PainterBuilder} from "@core/painter/PainterBuilder";
-import {aroundPos} from "@core/painter/painter.coordinats";
+import {Emitter} from "@core/Emitter"
+import {PainterBuilder} from "@core/painter/PainterBuilder"
+import {aroundPos} from "@core/painter/painter.coordinats"
 
 export class Game {
     constructor(cols, rows, $canvas, random, fogOfWar, botMode, mazeMatrix, emit) {
@@ -30,6 +30,7 @@ export class Game {
         this.$canvas = $canvas
         this.emitter = new Emitter()
         this.unsubs = []
+        this.inventory = []
         this.init()
     }
 
@@ -59,7 +60,10 @@ export class Game {
             }, this.matrixOfMaze)
         this.board.addPlayer(this.player)
         if (this.isReady) {
-            this.addElementsToRandomPos()
+            this.addElementToRandomPos('passiveExitImage')
+            this.addElementToRandomPos('keyImage')
+            this.addElementToRandomPos('trapImage', 3)
+            this.addElementToRandomPos('ropeImage')
         }
         ////////////////////////
         // Нужно сделать добавление событий при выполнении условия старта игры
@@ -72,18 +76,19 @@ export class Game {
         }
         ////////////////////////
 
-        this.board.on(this.player)
+        this.board.on()
     }
 
-    addElementsToRandomPos() {
-        const col = 4 + Math.floor(Math.random() * (this.columns - 5))
-        const row = 4 + Math.floor(Math.random() * (this.rows - 5))
-        if (!this.board.addGameElement('passiveExitImage', {col, row})) {
-            for (const arPos of aroundPos(row, col)) {
-                if (this.board.addGameElement('passiveExitImage', {row: arPos.row[0], col: arPos.col[0]})) break
+    addElementToRandomPos(element, number = 1) {
+        for (let i = 0; i < number; i++) {
+            const col = 4 + Math.floor(Math.random() * (this.columns - 5))
+            const row = 4 + Math.floor(Math.random() * (this.rows - 5))
+            if (!this.board.addGameElement(element, {col, row})) {
+                for (const arPos of aroundPos(row, col)) {
+                    if (this.board.addGameElement(element, {row: arPos.row[0], col: arPos.col[0]})) break
+                }
             }
         }
-
     }
 
     addEventListeners() {
@@ -116,6 +121,45 @@ export class Game {
                         y: SHIELD_SIZE
                     })
                     event.preventDefault()
+                    break
+            }
+            const gameElement = this.board.getCurrentGameElement(this.player.positionIndexes)
+            switch (gameElement) {
+                case 'activeExitImage':
+                    // Game Over
+                    console.log('Game Over')
+                    // dev option
+                    setTimeout(() => {
+                        window.location.reload()
+                    }, 1000)
+                    break
+                case 'passiveExitImage':
+                    // Message that need a key
+                    console.log('You must have a key')
+                    break
+                case 'keyImage':
+                    // Message that key found and switch exitBlock
+                    // if for optimization
+                    if (!this.inventory.includes('keyImage')) {
+                        console.log('You found a key')
+                        this.inventory.push('keyImage')
+                        this.board.unlockExit()
+                    }
+                    break
+                case 'ropeImage':
+                    // Message that you found a rope
+                    if (!this.inventory.includes('ropeImage:' + this.player.positionIndexes.toString())) {
+                        console.log('You found a rope')
+                        this.inventory.push('ropeImage:' + this.player.positionIndexes.toString())
+                    }
+                    break
+                case 'trapImage':
+                    // Message that you was took in trap
+                    const trap = 'trapImage:' + JSON.stringify(this.player.positionIndexes)
+                    if (!this.inventory.includes(trap)) {
+                        console.log('You in trap, opponent\'s 2 moves')
+                        this.inventory.push(trap)
+                    }
                     break
             }
         })
