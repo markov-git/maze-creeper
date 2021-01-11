@@ -142,15 +142,16 @@ export class Game {
                     // if for optimization
                     if (!this.inventory.includes('keyImage')) {
                         console.log('You found a key')
-                        this.inventory.push('keyImage')
+                        this.addItemToInv('keyImage')
                         this.board.unlockExit()
                     }
                     break
                 case 'ropeImage':
                     // Message that you found a rope
-                    if (!this.inventory.includes('ropeImage:' + this.player.positionIndexes.toString())) {
+                    const rope = 'ropeImage:' + this.player.positionIndexes.toString()
+                    if (!this.inventory.includes(rope)) {
                         console.log('You found a rope')
-                        this.inventory.push('ropeImage:' + this.player.positionIndexes.toString())
+                        this.addItemToInv(rope)
                     }
                     break
                 case 'trapImage':
@@ -158,10 +159,15 @@ export class Game {
                     const trap = 'trapImage:' + JSON.stringify(this.player.positionIndexes)
                     if (!this.inventory.includes(trap)) {
                         console.log('You in trap, opponent\'s 2 moves')
-                        this.inventory.push(trap)
+                        this.addItemToInv(trap)
                     }
                     break
             }
         })
+    }
+
+    addItemToInv(item) {
+        this.inventory.push(item)
+        this.board.updateInventory(item)
     }
 }

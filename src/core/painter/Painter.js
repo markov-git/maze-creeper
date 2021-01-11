@@ -24,6 +24,7 @@ export class Painter {
             trapImage: 'img/trap32.png'
         }
         this.imageWaiter = []
+        this.inventory = []
         this.pathMatrix = new Array(this.rows).fill('').map(_ => new Array(this.columns).fill(false))
     }
 

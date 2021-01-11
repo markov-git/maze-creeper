@@ -15,6 +15,7 @@ export class PainterBuilder extends Painter {
         } else {
             this.pathMatrix = invertMatrix(this.matrixOfMaze)
         }
+        this.shownInterfase = false
         this.init()
     }
 
@@ -41,7 +42,7 @@ export class PainterBuilder extends Painter {
     on() {
         this.prepare()
         if (this.gameIsReady) {
-
+            this.drawInventory()
             this.updatePlayer()
             if (this.fogOfWar) {
                 this.drawFog()
@@ -55,11 +56,29 @@ export class PainterBuilder extends Painter {
                 this.canvas.removeEventListener('click', this.onclick)
                 this.interfaceWall.clicked = false
                 this.gameIsReady = true
-                this.canvas.height = this.canvas.height - 3 * SHIELD_SIZE
+                this.canvas.height -= 3 * SHIELD_SIZE
                 this.emitFinishMaze(this.matrixOfMaze)
             }
         }
         window.requestAnimationFrame(this.on.bind(this))
+    }
+
+    drawInventory() {
+        if (this.inventory.length && !this.shownInterfase) {
+            this.shownInterfase = !this.shownInterfase
+            this.canvas.height += 3 * SHIELD_SIZE
+            this.applyColor('#928fa4')
+            this.context.fillRect(0, this.canvas.height - 3 * SHIELD_SIZE,
+                +this.canvas.width, SHIELD_SIZE * 3)
+        }
+        if (this.inventory.length) {
+            for (let i = 0; i < this.inventory.length; i++) {
+                const item = this.inventory[i].split(':')[0]
+                this.context.drawImage(this.images[item],
+                    SHIELD_SIZE * 0.5 + SHIELD_SIZE * i * 1.5, this.canvas.height - 2 * SHIELD_SIZE
+                )
+            }
+        }
     }
 
     drawInterface() {
@@ -126,6 +145,10 @@ export class PainterBuilder extends Painter {
                 this.recalculateSpaces()
             }
         }
+    }
+
+    updateInventory(inv) {
+        this.inventory.push(inv)
     }
 
     recalculateSpaces() {
