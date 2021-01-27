@@ -1,8 +1,8 @@
-import {Painter} from "@core/painter/Painter";
-import {SHIELD_SIZE} from "@core/constants";
-import {aroundPos, freeSpaceMatrix, localCoords, testInside} from "@core/painter/painter.coordinats";
-import {fillMatrix, invertMatrix} from "@core/painter/painter.matrixLogic";
-import {calculateItems} from "@core/utils";
+import {Painter} from "@core/painter/Painter"
+import {SHIELD_SIZE} from "@core/constants"
+import {aroundPos, freeSpaceMatrix, localCoords, testInside} from "@core/painter/painter.coordinats"
+import {fillMatrix, invertMatrix} from "@core/painter/painter.matrixLogic"
+import {calculateItems} from "@core/utils"
 
 export class PainterBuilder extends Painter {
   constructor(canvas, props) {
@@ -76,9 +76,9 @@ export class PainterBuilder extends Painter {
       this.context.fillRect(0, this.canvas.height - 3 * SHIELD_SIZE,
         +this.canvas.width, SHIELD_SIZE * 3)
       // write title
-      this.applyColor('black Serif')
+      this.applyColor('black')
       this.context.font = '32px serif'
-      this.context.fillText('Your inventory:',
+      this.context.fillText('Инвентарь:',
         SHIELD_SIZE * .4, this.canvas.height - 2.1 * SHIELD_SIZE)
       // draw items
       const inv = calculateItems(this.inventory)
@@ -87,7 +87,7 @@ export class PainterBuilder extends Painter {
         const count = 'x' + inv[item]
         this.context.drawImage(this.images[item],
           SHIELD_SIZE * (i * 1.5 + .5), this.canvas.height - 1.5 * SHIELD_SIZE)
-        this.applyColor('black Serif')
+        this.applyColor('black')
         this.context.font = '18px Arial'
         this.context.fillText(count,
           SHIELD_SIZE * (i * 1.5 + 1.5), this.canvas.height - 1.3 * SHIELD_SIZE)

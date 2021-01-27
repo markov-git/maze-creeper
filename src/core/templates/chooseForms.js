@@ -1,7 +1,7 @@
 export function chooseMode() {
     return `
         <div class="choose__form">
-            <h1>Режим игры</h1>
+            <h1>Новая игра</h1>
             <p id="pve">Игра с компьютером</p>
             <p id="pvp">Игра с другим игроком</p>
         </div>

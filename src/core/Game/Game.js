@@ -5,18 +5,21 @@ import {initialMatrix, toMatrix} from "@core/utils"
 import {Emitter} from "@core/Emitter"
 import {PainterBuilder} from "@core/painter/PainterBuilder"
 import {aroundPos} from "@core/painter/painter.coordinats"
+import {findBotWay} from "./game.findBotWay";
+import direction from './game.directions'
 
 export class Game {
-  constructor(cols, rows, $canvas, random, fogOfWar, botMode, mazeMatrix, emit) {
+  constructor(cols, rows, $canvas, random, fogOfWar, botMode, mazeMatrix, emit, setStatus, emitNextPlayer) {
     this.maze = initMaze(cols, rows)
     this.readyMaze = mazeMatrix
     this.columns = this.maze[0].length * 2 + 1
     this.rows = this.maze.length * 2 + 1
     this.fogOfWar = fogOfWar
     this.botMode = botMode
+    this.setStatus = setStatus
+    this.emitNextPlayer = emitNextPlayer
     if (random || this.readyMaze) {
       this.matrixOfMaze = this.readyMaze ? this.readyMaze : toMatrix(this.maze, this.columns, this.rows)
-
       this.boardWidth = this.columns * SHIELD_SIZE
       this.boardHeight = this.rows * SHIELD_SIZE
       this.isReady = random
@@ -50,12 +53,11 @@ export class Game {
       {
         x: SHIELD_SIZE,
         y: SHIELD_SIZE,
-        width: this.boardWidth,
-        height: this.boardHeight,
-        columns: this.columns,
-        raws: this.rows,
         emitMove: meta => {
           this.emitter.emit('move', meta)
+        },
+        emitWall: () => {
+          this.emitter.emit('wallFound')
         }
       }, this.matrixOfMaze)
     this.board.addPlayer(this.player)
@@ -71,6 +73,11 @@ export class Game {
     if (!this.botMode) {
       this.unsubs.push(this.emitter.subscribe('move', player => {
         this.board.updatePlayerMeta(player)
+      }))
+      this.unsubs.push(this.emitter.subscribe('wallFound', () => {
+        // Переход хода другому игроку
+        this.setStatus('Вы наткнулись на стену, ход противника!')
+        this.emitNextPlayer()
       }))
       this.addEventListeners()
     }
@@ -91,35 +98,31 @@ export class Game {
     }
   }
 
+  makeBotMove() {
+    // looking for best way
+    const move = findBotWay(this.player.matrixAI, this.player.positionIndexes)
+    console.log(move)
+    // make a move
+    this.player.move(move)
+  }
+
   addEventListeners() {
     document.addEventListener('keydown', event => {
       switch (event.key) {
         case 'ArrowRight':
-          this.player.move({
-            x: SHIELD_SIZE,
-            y: 0
-          })
+          this.player.move(direction.right)
           event.preventDefault()
           break
         case 'ArrowUp':
-          this.player.move({
-            x: 0,
-            y: -SHIELD_SIZE
-          })
+          this.player.move(direction.up)
           event.preventDefault()
           break
         case 'ArrowLeft':
-          this.player.move({
-            x: -SHIELD_SIZE,
-            y: 0
-          })
+          this.player.move(direction.left)
           event.preventDefault()
           break
         case 'ArrowDown':
-          this.player.move({
-            x: 0,
-            y: SHIELD_SIZE
-          })
+          this.player.move(direction.down)
           event.preventDefault()
           break
       }
@@ -127,7 +130,7 @@ export class Game {
       switch (gameElement) {
         case 'activeExitImage':
           // Game Over
-          console.log('Game Over')
+          this.setStatus('Вы победили!')
           // dev option
           setTimeout(() => {
             window.location.reload()
@@ -135,13 +138,13 @@ export class Game {
           break
         case 'passiveExitImage':
           // Message that need a key
-          console.log('You must have a key')
+          this.setStatus('Вам нужен ключ чтобы выйти из лабиринта!')
           break
         case 'keyImage':
           // Message that key found and switch exitBlock
           // if for optimization
           if (!this.inventory.includes('keyImage')) {
-            console.log('You found a key')
+            this.setStatus('Вы нашли ключ! Ход противника')
             this.addItemToInv('keyImage')
             this.board.unlockExit()
           }
@@ -150,7 +153,7 @@ export class Game {
           // Message that you found a rope
           const rope = 'ropeImage:' + this.player.positionIndexes.toString()
           if (!this.inventory.includes(rope)) {
-            console.log('You found a rope')
+            this.setStatus('Вы нашли веревку! Ход противника')
             this.addItemToInv(rope)
           }
           break
@@ -158,8 +161,8 @@ export class Game {
           // Message that you was took in trap
           const trap = 'trapImage:' + JSON.stringify(this.player.positionIndexes)
           if (!this.inventory.includes(trap)) {
-            console.log('You in trap, opponent\'s 2 moves')
-            this.addItemToInv(trap)
+            this.setStatus('Вы в ловушке, противник ходит 2 раза')
+            // this.addItemToInv(trap)
           }
           break
       }

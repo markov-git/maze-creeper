@@ -1,14 +1,16 @@
-import {SHIELD_SIZE} from "@core/constants";
-import {translateToCenter} from "@core/utils";
+import {SHIELD_SIZE} from "@core/constants"
+import {translateToCenter} from "@core/utils"
+import {fillMatrix, initMatrix} from "@core/painter/painter.matrixLogic";
 
 export class Player {
     constructor(prop, matrix) {
         this.position = {x: prop.x, y: prop.y}
         this.centerPosition = translateToCenter(this.position)
-        this.path = [this.centerPosition]
         this.foundedWalls = []
         this.matrix = matrix
+        this.matrixAI = initMatrix(fillMatrix(matrix, ''))
         this.emitMove = prop.emitMove
+        this.emitWall = prop.emitWall
         this.color = 'red'
         this.testPosition()
     }
@@ -22,7 +24,6 @@ export class Player {
                 this.position.y += SHIELD_SIZE
                 this.centerPosition = translateToCenter(this.position)
             }
-            this.path[0] = this.centerPosition
         }
     }
 
@@ -33,11 +34,10 @@ export class Player {
             this.position.x += dPos.x
             this.position.y += dPos.y
             this.centerPosition = translateToCenter(this.position)
-            this.path.push(this.centerPosition)
         } else {
+            // Добавить проверку на уже найденную такую стену
             this.addWall({x: this.centerPosition.x + dPos.x, y: this.centerPosition.y + dPos.y})
-            // dev
-            console.log(`Oh it's a wall, opponent's move`)
+            this.emitWall()
         }
         this.emitMove(this)
     }

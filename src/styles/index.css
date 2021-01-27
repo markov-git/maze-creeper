@@ -7,9 +7,33 @@
     font-family: 'Roboto', sans-serif;
 }
 
-#app {
-    margin: 10px 30px;
+.header {
+    background: linear-gradient(to top, white, gray);
+    margin: 0 0 10px;
+    height: 100px;
 }
+
+.header .header__content {
+    height: 100%;
+}
+
+.header .header__content h2 {
+    position: relative;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    transform: translateY(-50%);
+    top: 40%;
+    text-align: center;
+}
+
+.header .header__content div {
+    position: relative;
+    transform: translateY(-50%);
+    top: 50%;
+    text-align: center;
+    font-size: 1.4em;
+}
+
 
 .row {
     display: flex;
@@ -21,15 +45,26 @@
     height: 50px;
 }
 
+.app {
+    display: flex;
+    justify-content: space-around;
+}
+
+.app .gameBoard h2 {
+    text-align: center;
+}
+
 canvas {
     vertical-align: top;
     margin: 20px;
 }
 
 .choose__form {
+    margin: 30px auto;
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     width: 500px;
     border-radius: 2rem;
     background-color: gray;
