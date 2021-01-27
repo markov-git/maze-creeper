@@ -23,13 +23,9 @@ export function freeSpaceMatrix(matrixOfMaze) {
 
 export function aroundPos(row, col) {
     return [
-        // {row: [row - 1], col: [col - 1]},
         {row: [row - 1], col: [col]},
-        // {row: [row - 1], col: [col + 1]},
         {row: [row], col: [col - 1]},
         {row: [row], col: [col + 1]},
-        // {row: [row + 1], col: [col - 1]},
-        {row: [row + 1], col: [col]},
-        // {row: [row + 1], col: [col + 1]}
-        ]
+        {row: [row + 1], col: [col]}
+    ]
 }

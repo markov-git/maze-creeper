@@ -1,8 +1,12 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+    font-family: 'Roboto', sans-serif;
 }
+
 #app {
     margin: 10px 30px;
 }
@@ -18,5 +22,37 @@
 }
 
 canvas {
-    /*border: black solid 2px;*/
+    vertical-align: top;
+    margin: 20px;
+}
+
+.choose__form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 500px;
+    border-radius: 2rem;
+    background-color: gray;
+    padding: 3rem 0;
+}
+
+.choose__form h1 {
+    text-align: center;
+    font-size: 2.7rem;
+    margin-bottom: 1rem;
+}
+
+.choose__form p {
+    width: 330px;
+    text-align: center;
+    font-size: 1.5rem;
+    padding: 2rem;
+    margin-top: .4rem;
+}
+
+p:hover {
+    background-color: #a7701f;
+    border-radius: 1rem;
+    font-weight: bold;
+    cursor: pointer;
 }

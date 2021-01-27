@@ -1,4 +1,5 @@
 import {SHIELD_SIZE} from "@core/constants"
+import {fillMatrix} from "@core/painter/painter.matrixLogic";
 
 export class Painter {
     constructor(canvas, {columns, rows, matrixOfMaze, boardWidth, boardHeight}) {
@@ -8,13 +9,23 @@ export class Painter {
         this.rows = rows
         this.matrixOfMaze = matrixOfMaze
         this.matrixOfFog = Painter.generateMatrixOfFog(matrixOfMaze)
+        this.matrixOfGameElements = fillMatrix(matrixOfMaze, '')
         this.width = this.canvas.width = boardWidth
         this.height = this.canvas.height = boardHeight
         this.regionColor = 'rgb(48,105,49, 0.5)'
         this.pathColor = 'black'
-        this.wallImage = 'img/wall32.png'
-        this.pathImage = 'img/floor32.png'
+        this.images = {
+            wallImage: 'img/wall32.png',
+            pathImage: 'img/floor32.png',
+            activeExitImage: 'img/aExit32.png',
+            passiveExitImage: 'img/pExit32.png',
+            keyImage: 'img/key32.png',
+            ropeImage: 'img/rope32.png',
+            trapImage: 'img/trap32.png'
+        }
         this.imageWaiter = []
+        this.inventory = []
+        this.pathMatrix = new Array(this.rows).fill('').map(_ => new Array(this.columns).fill(false))
     }
 
     static generateMatrixOfFog(matrix) {
@@ -37,10 +48,10 @@ export class Painter {
         for (let y = 0; y < this.rows; y++) {
             for (let x = 0; x < this.columns; x++) {
                 if (this.matrixOfMaze[y][x]) {
-                    this.context.drawImage(this.wallImage,
+                    this.context.drawImage(this.images.wallImage,
                         x * SHIELD_SIZE, y * SHIELD_SIZE)
                 } else {
-                    this.context.drawImage(this.pathImage,
+                    this.context.drawImage(this.images.pathImage,
                         x * SHIELD_SIZE, y * SHIELD_SIZE)
                 }
             }
@@ -49,16 +60,13 @@ export class Painter {
 
     on() {
         this.prepare()
-
         this.updatePlayer()
-
         this.drawFog()
-
         window.requestAnimationFrame(this.on.bind(this))
     }
 
     updatePlayer() {
-        this.drawPlayerPath()
+        // this.drawPlayerPath() Выглядит неочень
         this.drawPlayer()
     }
 
@@ -77,11 +85,32 @@ export class Painter {
         this.removeSomeFog()
     }
 
+    addGameElement(element, pos) {
+        if (!this.matrixOfGameElements[pos.row][pos.col] && !this.matrixOfMaze[pos.row][pos.col]) {
+            this.matrixOfGameElements[pos.row][pos.col] = element
+            this.pathMatrix[pos.row][pos.col] = false
+            return true
+        } else return false
+    }
+
+    unlockExit() {
+        for (let row = 0; row < this.matrixOfGameElements.length; row++) {
+            const i = this.matrixOfGameElements[row].findIndex(el => el === 'passiveExitImage')
+            if (i !== -1) {
+                this.matrixOfGameElements[row][i] = 'activeExitImage'
+                break
+            }
+        }
+    }
+
+    getCurrentGameElement(pos) {
+        return this.matrixOfGameElements[pos.y][pos.x]
+    }
+
     removeSomeFog() {
         const xIndex = this.player.positionIndexes.x
         const yIndex = this.player.positionIndexes.y
         this.matrixOfFog[yIndex][xIndex] = false
-
         const walls = this.player.foundedWalls
         if (walls) {
             walls.forEach(wall => {
@@ -111,7 +140,6 @@ export class Painter {
             this.context.setLineDash([10, 12])
             this.context.lineWidth = 3
             this.context.beginPath()
-
             this.context.moveTo(path[0].x, path[0].y)
             for (let step = 1; step < path.length; step++) {
                 this.context.lineTo(path[step].x, path[step].y)
@@ -135,17 +163,13 @@ export class Painter {
     }
 
     initImages() {
-        const srcWall = this.wallImage
-        this.wallImage = new Image()
-        this.wallImage.src = srcWall
-        this.imageWaiter.push(new Promise(resolve => {
-            this.wallImage.addEventListener('load', resolve)
-        }))
-        const srcFloor = this.pathImage
-        this.pathImage = new Image()
-        this.pathImage.src = srcFloor
-        this.imageWaiter.push(new Promise(resolve => {
-            this.pathImage.addEventListener('load', resolve)
-        }))
+        for (const key of Object.keys(this.images)) {
+            const src = this.images[key]
+            this.images[key] = new Image()
+            this.images[key].src = src
+            this.imageWaiter.push(new Promise(resolve => {
+                this.images[key].addEventListener('load', resolve)
+            }))
+        }
     }
 }
