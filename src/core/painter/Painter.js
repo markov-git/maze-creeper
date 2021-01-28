@@ -2,7 +2,7 @@ import {SHIELD_SIZE} from "@core/constants"
 import {fillMatrix} from "@core/painter/painter.matrixLogic";
 
 export class Painter {
-    constructor(canvas, {columns, rows, matrixOfMaze, boardWidth, boardHeight}) {
+    constructor(canvas, {columns, rows, matrixOfMaze, boardWidth, boardHeight, fogOfWar}) {
         this.canvas = canvas
         this.context = this.canvas.getContext('2d')
         this.columns = columns
@@ -14,6 +14,7 @@ export class Painter {
         this.height = this.canvas.height = boardHeight
         this.regionColor = 'rgb(48,105,49, 0.5)'
         this.pathColor = 'black'
+        this.fogOfWar = fogOfWar
         this.images = {
             wallImage: 'img/wall32.png',
             pathImage: 'img/floor32.png',
@@ -120,7 +121,11 @@ export class Painter {
     }
 
     drawFog() {
-        this.applyColor('slategrey')
+        if (this.fogOfWar) {
+            this.applyColor('slategray')
+        } else {
+            this.applyColor('rgba(112,128,144,.7)')
+        }
         for (let y = 0; y < this.matrixOfFog.length; y++) {
             for (let x = 0; x < this.matrixOfFog[y].length; x++) {
                 if (this.matrixOfFog[y][x]) {

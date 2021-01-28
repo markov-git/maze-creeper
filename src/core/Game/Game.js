@@ -70,16 +70,23 @@ export class Game {
     ////////////////////////
     // Нужно сделать добавление событий при выполнении условия старта игры
     ////////////////////////
+    this.unsubs.push(this.emitter.subscribe('move', player => {
+      this.board.updatePlayerMeta(player)
+    }))
+
     if (!this.botMode) {
-      this.unsubs.push(this.emitter.subscribe('move', player => {
-        this.board.updatePlayerMeta(player)
-      }))
       this.unsubs.push(this.emitter.subscribe('wallFound', () => {
         // Переход хода другому игроку
         this.setStatus('Вы наткнулись на стену, ход противника!')
         this.emitNextPlayer()
       }))
       this.addEventListeners()
+    } else {
+      this.unsubs.push(this.emitter.subscribe('wallFound', () => {
+        // Переход хода другому игроку
+        this.setStatus('Компьтер наткнулся на стену, ваш ход!')
+        // this.emitNextPlayer()
+      }))
     }
     ////////////////////////
 
@@ -101,9 +108,9 @@ export class Game {
   makeBotMove() {
     // looking for best way
     const move = findBotWay(this.player.matrixAI, this.player.positionIndexes)
-    console.log(move)
     // make a move
     this.player.move(move)
+    this.chekGameElement('bot')
   }
 
   addEventListeners() {
@@ -126,47 +133,65 @@ export class Game {
           event.preventDefault()
           break
       }
-      const gameElement = this.board.getCurrentGameElement(this.player.positionIndexes)
-      switch (gameElement) {
-        case 'activeExitImage':
-          // Game Over
-          this.setStatus('Вы победили!')
-          // dev option
-          setTimeout(() => {
-            window.location.reload()
-          }, 1000)
-          break
-        case 'passiveExitImage':
-          // Message that need a key
-          this.setStatus('Вам нужен ключ чтобы выйти из лабиринта!')
-          break
-        case 'keyImage':
-          // Message that key found and switch exitBlock
-          // if for optimization
-          if (!this.inventory.includes('keyImage')) {
-            this.setStatus('Вы нашли ключ! Ход противника')
-            this.addItemToInv('keyImage')
-            this.board.unlockExit()
-          }
-          break
-        case 'ropeImage':
-          // Message that you found a rope
-          const rope = 'ropeImage:' + this.player.positionIndexes.toString()
-          if (!this.inventory.includes(rope)) {
-            this.setStatus('Вы нашли веревку! Ход противника')
-            this.addItemToInv(rope)
-          }
-          break
-        case 'trapImage':
-          // Message that you was took in trap
-          const trap = 'trapImage:' + JSON.stringify(this.player.positionIndexes)
-          if (!this.inventory.includes(trap)) {
-            this.setStatus('Вы в ловушке, противник ходит 2 раза')
-            // this.addItemToInv(trap)
-          }
-          break
-      }
+      this.chekGameElement('gamer')
     })
+  }
+
+  chekGameElement(type) {
+    const gameElement = this.board.getCurrentGameElement(this.player.positionIndexes)
+    let message
+    switch (gameElement) {
+      case 'activeExitImage':
+        // Game Over
+        message = type === 'gamer' ? 'Вы победили!' : 'Комрьютер победил'
+        this.setStatus(message)
+        // dev option
+        setTimeout(() => {
+          window.location.reload()
+        }, 1000)
+        break
+      case 'passiveExitImage':
+        // Message that need a key
+        message = type === 'gamer'
+          ? 'Вам нужен ключ чтобы выйти из лабиринта!'
+          : 'Компьютеру нужен ключ чтобы выйти из лабиринта!'
+        this.setStatus(message)
+        break
+      case 'keyImage':
+        // Message that key found and switch exitBlock
+        // if for optimization
+        if (!this.inventory.includes('keyImage')) {
+          message = type === 'gamer'
+            ? 'Вы нашли ключ! Ход противника'
+            : 'Компьютер нашел ключ! Ваш ход'
+          this.setStatus(message)
+          this.addItemToInv('keyImage')
+          this.board.unlockExit()
+        }
+        break
+      case 'ropeImage':
+        // Message that you found a rope
+        const rope = 'ropeImage:' + this.player.positionIndexes.toString()
+        if (!this.inventory.includes(rope)) {
+          message = type === 'gamer'
+            ? 'Вы нашли веревку! Ход противника'
+            : 'Компьютер нашел веревку! Ваш ход'
+          this.setStatus(message)
+          this.addItemToInv(rope)
+        }
+        break
+      case 'trapImage':
+        // Message that you was took in trap
+        const trap = 'trapImage:' + JSON.stringify(this.player.positionIndexes)
+        if (!this.inventory.includes(trap)) {
+          message = type === 'gamer'
+            ? 'Вы в ловушке, противник ходит 2 раза'
+            : 'Компьютер в ловушке, вы ходите 2 раза'
+          this.setStatus(message)
+          // this.addItemToInv(trap)
+        }
+        break
+    }
   }
 
   addItemToInv(item) {

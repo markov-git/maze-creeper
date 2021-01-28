@@ -7,7 +7,6 @@ import {calculateItems} from "@core/utils"
 export class PainterBuilder extends Painter {
   constructor(canvas, props) {
     super(canvas, props)
-    this.fogOfWar = props.fogOfWar
     this.gameIsReady = props.gameIsReady
     this.emitFinishMaze = props.emitFinishMaze
     if (!this.gameIsReady) {
@@ -45,9 +44,7 @@ export class PainterBuilder extends Painter {
     if (this.gameIsReady) {
       this.drawInventory()
       this.updatePlayer()
-      if (this.fogOfWar) {
-        this.drawFog()
-      }
+      this.drawFog()
     } else {
       this.drawInterface()
       if (this.interfaceWall.clicked) {
