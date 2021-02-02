@@ -83,12 +83,12 @@ class Main {
     addModeListeners() {
         this.pvpMode = this.pvpMode.bind(this)
         this.pveMode = this.pveMode.bind(this)
-        this.$app.querySelector('#pvp').addEventListener('click', this.pvpMode)
+        this.$app.querySelector('#pvp')?.addEventListener('click', this.pvpMode)
         this.$app.querySelector('#pve').addEventListener('click', this.pveMode)
     }
 
     removeModeListeners() {
-        this.$app.querySelector('#pvp').removeEventListener('click', this.pvpMode)
+        this.$app.querySelector('#pvp')?.removeEventListener('click', this.pvpMode)
         this.$app.querySelector('#pve').removeEventListener('click', this.pveMode)
         this.$app.innerHTML = ''
     }

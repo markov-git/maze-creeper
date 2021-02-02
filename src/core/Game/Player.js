@@ -34,11 +34,14 @@ export class Player {
       this.position.x += dPos.x
       this.position.y += dPos.y
       this.centerPosition = translateToCenter(this.position)
+      this.emitMove(this)
+      return true
     } else {
       this.addWall({x: this.centerPosition.x + dPos.x, y: this.centerPosition.y + dPos.y})
       this.emitWall()
+      this.emitMove(this)
+      return false
     }
-    this.emitMove(this)
   }
 
   addWall(pos) {

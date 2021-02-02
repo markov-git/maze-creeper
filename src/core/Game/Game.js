@@ -109,8 +109,12 @@ export class Game {
     // looking for best way
     const move = findBotWay(this.player.matrixAI, this.player.positionIndexes)
     // make a move
-    this.player.move(move)
+    const result = this.player.move(move.move)
     this.chekGameElement('bot')
+
+    if (move.meta && result) {
+      setTimeout(this.makeBotMove.bind(this),300)
+    }
   }
 
   addEventListeners() {
