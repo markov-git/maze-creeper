@@ -5,11 +5,15 @@ import {initialMatrix, toMatrix} from "@core/utils"
 import {Emitter} from "@core/Emitter"
 import {PainterBuilder} from "@core/painter/PainterBuilder"
 import {aroundPos} from "@core/painter/painter.coordinats"
-import {findBotWay} from "./game.findBotWay";
+import {findBotWay} from "./game.findBotWay"
 import direction from './game.directions'
 
 export class Game {
-  constructor(cols, rows, $canvas, random, fogOfWar, botMode, mazeMatrix, emit, setStatus, emitNextPlayer) {
+  constructor(cols, rows,
+              $canvas, random,
+              fogOfWar, botMode,
+              mazeMatrix, emit,
+              setStatus, emitNextPlayer, setLocalStatus) {
     this.maze = initMaze(cols, rows)
     this.readyMaze = mazeMatrix
     this.columns = this.maze[0].length * 2 + 1
@@ -17,6 +21,7 @@ export class Game {
     this.fogOfWar = fogOfWar
     this.botMode = botMode
     this.setStatus = setStatus
+    this.setLocalStatus = setLocalStatus
     this.emitNextPlayer = emitNextPlayer
     if (random || this.readyMaze) {
       this.matrixOfMaze = this.readyMaze ? this.readyMaze : toMatrix(this.maze, this.columns, this.rows)
@@ -36,6 +41,12 @@ export class Game {
     this.inventory = []
     this.init()
   }
+
+  static availableToMove = {
+    player: 0,
+    bot: 0
+  }
+  static localHeaders = []
 
   init() {
     this.board = new PainterBuilder(this.$canvas, {
@@ -78,19 +89,50 @@ export class Game {
       this.unsubs.push(this.emitter.subscribe('wallFound', () => {
         // Переход хода другому игроку
         this.setStatus('Вы наткнулись на стену, ход противника!')
+        Game.forbidToMove('player')
+        this.calculatePlayerStatus()
+        Game.allowToMove('bot')
         this.emitNextPlayer()
+        // a bug with blocking a game
+
+        // if (Game.allowToMove('bot')) {
+        //   if (Game.allowToMove('player')) {
+        //     this.emitNextPlayer()
+        //   }
+        // }
       }))
       this.addEventListeners()
     } else {
       this.unsubs.push(this.emitter.subscribe('wallFound', () => {
         // Переход хода другому игроку
         this.setStatus('Компьтер наткнулся на стену, ваш ход!')
+        Game.forbidToMove('bot')
+        Game.allowToMove('player')
         // this.emitNextPlayer()
       }))
     }
     ////////////////////////
 
     this.board.on()
+  }
+
+  calculateBotStatus() {
+    const count = Game.availableToMove.bot
+    if (count) {
+      this.setLocalStatus(`Пропуск ${count} ${count === 1 ? 'хода' : 'ходов'}`)
+    } else {
+      this.setLocalStatus()
+    }
+  }
+
+  calculatePlayerStatus() {
+    const count = Game.availableToMove.player
+    if (count) {
+      const message = `Пропуск ${count} ${count === 1 ? 'хода' : 'ходов'}`
+      this.setLocalStatus(message, Game.localHeaders[0])
+    } else {
+      this.setLocalStatus('', Game.localHeaders[0])
+    }
   }
 
   addElementToRandomPos(element, number = 1) {
@@ -106,38 +148,63 @@ export class Game {
   }
 
   makeBotMove() {
-    // looking for best way
-    const move = findBotWay(this.player.matrixAI, this.player.positionIndexes)
-    // make a move
-    const result = this.player.move(move.move)
-    this.chekGameElement('bot')
+    this.calculateBotStatus()
+    if (Game.availableToMove.bot === 0) {
+      // looking for best way
+      const move = findBotWay(this.player.matrixAI, this.player.positionIndexes)
+      // make a move
+      const result = this.player.move(move.move)
+      this.chekGameElement('bot')
 
-    if (move.meta && result) {
-      setTimeout(this.makeBotMove.bind(this),300)
+      if (result) {
+        setTimeout(this.makeBotMove.bind(this), 400)
+      } else {
+        this.calculateBotStatus()
+        setTimeout(() => {
+          if (Game.allowToMove('player')) {
+            this.makeBotMove()
+          }
+        }, 400)
+      }
+    } else {
+      Game.allowToMove('player')
     }
+    this.calculatePlayerStatus()
+  }
+
+  static forbidToMove(who, num = 1) {
+    Game.availableToMove[who] += num
+  }
+
+  static allowToMove(who) {
+    return Game.availableToMove[who] - 1 >= 0
+      ? --Game.availableToMove[who]
+      : Game.availableToMove[who]
   }
 
   addEventListeners() {
     document.addEventListener('keydown', event => {
-      switch (event.key) {
-        case 'ArrowRight':
-          this.player.move(direction.right)
-          event.preventDefault()
-          break
-        case 'ArrowUp':
-          this.player.move(direction.up)
-          event.preventDefault()
-          break
-        case 'ArrowLeft':
-          this.player.move(direction.left)
-          event.preventDefault()
-          break
-        case 'ArrowDown':
-          this.player.move(direction.down)
-          event.preventDefault()
-          break
+      if (Game.availableToMove.player === 0) {
+        switch (event.key) {
+          case 'ArrowRight':
+            this.player.move(direction.right)
+            event.preventDefault()
+            break
+          case 'ArrowUp':
+            this.player.move(direction.up)
+            event.preventDefault()
+            break
+          case 'ArrowLeft':
+            this.player.move(direction.left)
+            event.preventDefault()
+            break
+          case 'ArrowDown':
+            this.player.move(direction.down)
+            event.preventDefault()
+            break
+        }
+        this.chekGameElement('gamer')
       }
-      this.chekGameElement('gamer')
     })
   }
 
@@ -152,7 +219,7 @@ export class Game {
         // dev option
         setTimeout(() => {
           window.location.reload()
-        }, 1000)
+        }, 3000)
         break
       case 'passiveExitImage':
         // Message that need a key
@@ -166,8 +233,8 @@ export class Game {
         // if for optimization
         if (!this.inventory.includes('keyImage')) {
           message = type === 'gamer'
-            ? 'Вы нашли ключ! Ход противника'
-            : 'Компьютер нашел ключ! Ваш ход'
+            ? 'Вы нашли ключ!'
+            : 'Компьютер нашел ключ!'
           this.setStatus(message)
           this.addItemToInv('keyImage')
           this.board.unlockExit()
@@ -188,11 +255,19 @@ export class Game {
         // Message that you was took in trap
         const trap = 'trapImage:' + JSON.stringify(this.player.positionIndexes)
         if (!this.inventory.includes(trap)) {
-          message = type === 'gamer'
-            ? 'Вы в ловушке, противник ходит 2 раза'
-            : 'Компьютер в ловушке, вы ходите 2 раза'
+          if (type === 'gamer') {
+            message = 'Вы в ловушке - пропускаете 2 хода'
+            Game.forbidToMove('player', 2)
+            this.setLocalStatus(`Пропуск 2 ходов`)
+            this.emitNextPlayer()
+          } else {
+            message = 'Компьютер в ловушке - пропускает 2 хода'
+            this.setLocalStatus(`Пропуск 2 ходов`)
+            Game.forbidToMove('bot', 2)
+            Game.allowToMove('player')
+          }
           this.setStatus(message)
-          // this.addItemToInv(trap)
+          this.addItemToInv(trap)
         }
         break
     }

@@ -3,24 +3,24 @@ import {SHIELD_SIZE} from "@core/constants";
 
 export function findBotWay(matrix, {x, y}) {
   matrix[y][x] = 'path'
-  if (matrix[y - 1][x] === '') {
+  if (isNotResearched(matrix, y + 1, x)) {
     return {
-      meta: true,
-      move: direction.up
-    }
-  } else if (matrix[y][x + 1] === '') {
-    return {
-      meta: true,
-      move: direction.right
-    }
-  } else if (matrix[y + 1][x] === '') {
-    return {
-      meta: true,
+      // meta: true,
       move: direction.down
     }
-  } else if (matrix[y][x - 1] === '') {
+  } else if (isNotResearched(matrix, y, x + 1)) {
     return {
-      meta: true,
+      // meta: true,
+      move: direction.right
+    }
+  } else if (isNotResearched(matrix, y - 1, x)) {
+    return {
+      // meta: true,
+      move: direction.up
+    }
+  } else if (isNotResearched(matrix, y, x - 1)) {
+    return {
+      // meta: true,
       move: direction.left
     }
   } else {
@@ -32,8 +32,16 @@ export function findBotWay(matrix, {x, y}) {
       newY = y + returnMove.y / SHIELD_SIZE
     } while (matrix[newY][newX] !== 'path')
     return {
-      meta: false,
+      // meta: true,
       move: returnMove
     }
   }
+}
+
+function isNotResearched(matrix, y, x) {
+  return matrix[y][x] === ''
+    && y > 0
+    && y < matrix.length
+    && x > 0
+    && x < matrix[0].length
 }
