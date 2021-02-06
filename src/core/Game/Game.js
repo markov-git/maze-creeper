@@ -1,6 +1,6 @@
 import {initMaze} from "@core/mazeGenerator/MazeGenerator"
 import {Player} from "@core/Game/Player"
-import {SHIELD_SIZE} from "@core/constants"
+import {MOVE_DELAY, SHIELD_SIZE} from "@core/constants"
 import {initialMatrix, toMatrix} from "@core/utils"
 import {Emitter} from "@core/Emitter"
 import {PainterBuilder} from "@core/painter/PainterBuilder"
@@ -44,7 +44,10 @@ export class Game {
 
   static availableToMove = {
     player: 0,
-    bot: 0
+    bot: 0,
+    blocked() {
+      return this.player && this.bot
+    }
   }
   static localHeaders = []
 
@@ -93,13 +96,6 @@ export class Game {
         this.calculatePlayerStatus()
         Game.allowToMove('bot')
         this.emitNextPlayer()
-        // a bug with blocking a game
-
-        // if (Game.allowToMove('bot')) {
-        //   if (Game.allowToMove('player')) {
-        //     this.emitNextPlayer()
-        //   }
-        // }
       }))
       this.addEventListeners()
     } else {
@@ -108,20 +104,21 @@ export class Game {
         this.setStatus('Компьтер наткнулся на стену, ваш ход!')
         Game.forbidToMove('bot')
         Game.allowToMove('player')
+        this.calculatePlayerStatus()
         // this.emitNextPlayer()
       }))
     }
-    ////////////////////////
-
     this.board.on()
   }
 
   calculateBotStatus() {
     const count = Game.availableToMove.bot
     if (count) {
-      this.setLocalStatus(`Пропуск ${count} ${count === 1 ? 'хода' : 'ходов'}`)
+      this.setLocalStatus(
+        `Пропуск ${count} ${count === 1 ? 'хода' : 'ходов'}`,
+        Game.localHeaders[1])
     } else {
-      this.setLocalStatus()
+      this.setLocalStatus('', Game.localHeaders[1])
     }
   }
 
@@ -149,6 +146,7 @@ export class Game {
 
   makeBotMove() {
     this.calculateBotStatus()
+    // делаем ход если можем
     if (Game.availableToMove.bot === 0) {
       // looking for best way
       const move = findBotWay(this.player.matrixAI, this.player.positionIndexes)
@@ -157,17 +155,19 @@ export class Game {
       this.chekGameElement('bot')
 
       if (result) {
-        setTimeout(this.makeBotMove.bind(this), 400)
+        setTimeout(this.makeBotMove.bind(this), MOVE_DELAY)
       } else {
         this.calculateBotStatus()
         setTimeout(() => {
           if (Game.allowToMove('player')) {
+            this.calculatePlayerStatus()
             this.makeBotMove()
           }
-        }, 400)
+        }, MOVE_DELAY)
       }
-    } else {
-      Game.allowToMove('player')
+      // иначе передаем ход игроку
+    } else if (Game.allowToMove('player')) {
+      this.makeBotMove()
     }
     this.calculatePlayerStatus()
   }
@@ -259,6 +259,7 @@ export class Game {
             message = 'Вы в ловушке - пропускаете 2 хода'
             Game.forbidToMove('player', 2)
             this.setLocalStatus(`Пропуск 2 ходов`)
+            Game.allowToMove('bot')
             this.emitNextPlayer()
           } else {
             message = 'Компьютер в ловушке - пропускает 2 хода'
