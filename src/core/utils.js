@@ -59,3 +59,10 @@ export function calculateItems(items) {
   }
   return result
 }
+
+export function randomIndexes(columns, rows) {
+  return {
+    col: 4 + Math.floor(Math.random() * (columns - 5)),
+    row: 4 + Math.floor(Math.random() * (rows - 5))
+  }
+}

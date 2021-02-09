@@ -1,6 +1,6 @@
-import {Game} from "@core/Game/Game"
-import {autoMode, chooseMode, sizeMode} from "@core/templates/chooseForms"
-import {Emitter} from "@core/Emitter"
+import {Game} from '@core/Game/Game'
+import {autoMode, chooseMode, sizeMode} from '@core/templates/chooseForms'
+import {Emitter} from '@core/Emitter'
 
 class Main {
   constructor() {
@@ -14,20 +14,6 @@ class Main {
   chooseGame() {
     this.$app.insertAdjacentHTML('beforeend', chooseMode())
     this.addModeListeners()
-  }
-
-  pvpMode() {
-    this.PVEmode = false
-    this.removeModeListeners()
-    this.$app.insertAdjacentHTML('beforeend', sizeMode())
-    this.addSizeListener()
-  }
-
-  pveMode() {
-    this.PVEmode = true
-    this.removeModeListeners()
-    this.$app.insertAdjacentHTML('beforeend', sizeMode())
-    this.addSizeListener()
   }
 
   addSizeListener() {
@@ -53,18 +39,19 @@ class Main {
       this.$app.innerHTML = ''
 
       if (this.PVEmode && autoMode) { // против бота с автогенерацией лабиринта
-        this.createGameBoard(this.size, autoMode, true, false)
-        this.createGameBoard(this.size, autoMode, false, true)
+        this.createGameBoard({size: {cols: this.size, rows: this.size}, random: autoMode, fogOfWar: true, botMode: false})
+        this.createGameBoard({size: {cols: this.size, rows: this.size}, random: autoMode, fogOfWar: false, botMode: true})
       } else if (this.PVEmode && !autoMode) { // против бота с ручной генерацией лабиринта
         this.emitter.subscribe('maze-finished', mazeMatrix => {
           this.$app.innerHTML = ''
-          this.createGameBoard(this.size, true, true, false)
-          this.createGameBoard(this.size, true, false, true, mazeMatrix)
+          this.createGameBoard({size: {cols: this.size, rows: this.size}, random: true, fogOfWar: true, botMode: false})
+          this.createGameBoard({size: {cols: this.size, rows: this.size}, random: true, fogOfWar: false, botMode: true, mazeMatrix})
         })
         const emit = function (mazeMatrix) {
           return this.emitter.emit('maze-finished', mazeMatrix)
         }
-        this.createGameBoard(this.size, autoMode, true, false, false, emit.bind(this))
+
+        this.createGameBoard({size: {cols: this.size, rows: this.size}, random: autoMode, fogOfWar: true, botMode: false, mazeMatrix: false, emit: emit.bind(this)})
       } else {  // против другого игрока
         this.$app.insertAdjacentHTML('beforeend', `
                 <h1>ERROR</h1>
@@ -75,14 +62,23 @@ class Main {
         // открыть возможность хода другого игрока
         this.games[1].makeBotMove()
       }))
-
-      this.setStatus('Игра началась. Ход игрока...')
+      this.$status.innerHTML = 'Игра началась. Ход игрока...'
     }
   }
 
   addModeListeners() {
-    this.pvpMode = this.pvpMode.bind(this)
-    this.pveMode = this.pveMode.bind(this)
+    this.pvpMode = () => {
+      this.PVEmode = false
+      this.removeModeListeners()
+      this.$app.insertAdjacentHTML('beforeend', sizeMode())
+      this.addSizeListener()
+    }
+    this.pveMode = () => {
+      this.PVEmode = true
+      this.removeModeListeners()
+      this.$app.insertAdjacentHTML('beforeend', sizeMode())
+      this.addSizeListener()
+    }
     this.$app.querySelector('#pvp')?.addEventListener('click', this.pvpMode)
     this.$app.querySelector('#pve').addEventListener('click', this.pveMode)
   }
@@ -93,24 +89,29 @@ class Main {
     this.$app.innerHTML = ''
   }
 
-  createGameBoard(size, genMode, fogMode, botMode, mazeMatrix, emit) {
+  createGameBoard(props) {
     const $div = document.createElement('div')
     $div.classList.add('gameBoard')
     const $title = document.createElement('h2')
-    $title.innerHTML = botMode ? 'Поле противника' : 'Твое поле'
+    $title.innerHTML = props.botMode ? 'Поле противника' : 'Твое поле'
     const $canvas = document.createElement('canvas')
     $div.appendChild($title)
     $div.appendChild($canvas)
     this.$app.appendChild($div)
 
+    Game.localHeaders.push($title)
+
     const emitNextPlayer = () => {
       this.emitter.emit('nextStep')
     }
 
-    Game.localHeaders.push($title)
-    function setLocalStatus(message = '', node = $title) {
-      if (message==='') {
-        node.innerHTML = botMode ? 'Поле противника' : 'Твое поле'
+    const setStatus = message => {
+      this.$status.innerHTML = message
+    }
+
+    const setLocalStatus = (message = '', node = $title) => {
+      if (message === '') {
+        node.innerHTML = props.botMode ? 'Твое поле' : 'Поле противника'
         node.style.color = 'black'
       } else {
         node.innerHTML = message
@@ -118,15 +119,15 @@ class Main {
       }
     }
 
-    const game = new Game(size, size,
-      $canvas,
-      genMode, fogMode, botMode, mazeMatrix,
-      emit, this.setStatus.bind(this), emitNextPlayer, setLocalStatus)
+    const game = new Game(
+      {
+        $canvas,
+        setStatus,
+        emitNextPlayer,
+        setLocalStatus,
+        ...props
+      })
     this.games.push(game)
-  }
-
-  setStatus(message) {
-    this.$status.innerHTML = message
   }
 }
 

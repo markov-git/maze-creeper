@@ -120,6 +120,6 @@ class MazeGenerator {
 
 }
 
-export function initMaze(cols, rows) {
+export function initMaze({cols, rows}) {
     return new MazeGenerator(cols, rows).generate()
 }
