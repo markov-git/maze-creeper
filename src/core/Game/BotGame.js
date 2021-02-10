@@ -21,30 +21,35 @@ export default class BotGame extends Game {
   makeBotMove() {
     this.setTitleStatus()
     if (Game.availableToMove.bot === 0) {
-      const {move} = findBotWay(this.player.matrixAI, this.player.positionIndexes)
-      const result = this.player.move(move)
-      if (result) {
-        this.chekGameElement()
-        setTimeout(this.makeBotMove.bind(this), MOVE_DELAY)
-      } else {
-        const playerBlock = Game.allowToMove('player')
-        this.setTitleStatus(true)
-        if (playerBlock) {
-          setTimeout(() => {
-            Game.allowToMove('bot')
-            this.makeBotMove()
-          }, MOVE_DELAY)
-        }
-      }
+      this.tryToMove()
     } else {
-      const playerBlock = Game.allowToMove('player')
-      this.setTitleStatus(true)
-      if (playerBlock) {
-        Game.allowToMove('bot')
-        this.makeBotMove()
-      }
+      this.allowPlayerToMove()
     }
     this.setTitleStatus()
+  }
+
+  allowPlayerToMove() {
+    const playerBlock = Game.allowToMove('player')
+    this.setTitleStatus(true)
+    if (playerBlock) {
+      setTimeout(() => {
+        Game.allowToMove('bot')
+        this.makeBotMove()
+      }, MOVE_DELAY)
+    }
+  }
+
+  tryToMove() {
+    const {move} = findBotWay(this.player.matrixAI, this.player.positionIndexes)
+    const result = this.player.move(move)
+    if (result) {
+      this.chekGameElement()
+      setTimeout(() => {
+        this.makeBotMove()
+      }, MOVE_DELAY)
+    } else {
+      this.allowPlayerToMove()
+    }
   }
 
   exitAction(mode) {
