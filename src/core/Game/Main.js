@@ -44,7 +44,7 @@ class Main {
         this.createGameBoard({
           size: {cols: this.size, rows: this.size},
           random: autoMode,
-          fogOfWar: true,
+          fogOfWar: false, // def!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           botMode: false
         })
         this.createGameBoard({
@@ -56,7 +56,12 @@ class Main {
       } else if (this.PVEmode && !autoMode) { // против бота с ручной генерацией лабиринта
         this.emitter.subscribe('maze-finished', mazeMatrix => {
           this.$app.innerHTML = ''
-          this.createGameBoard({size: {cols: this.size, rows: this.size}, random: true, fogOfWar: true, botMode: false})
+          this.createGameBoard({
+            size: {cols: this.size, rows: this.size},
+            random: true,
+            fogOfWar: true,
+            botMode: false
+          })
           this.createGameBoard({
             size: {cols: this.size, rows: this.size},
             random: true,

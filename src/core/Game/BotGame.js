@@ -11,7 +11,6 @@ export default class BotGame extends Game {
   init() {
     super.init()
     this.unsubs.push(this.emitter.subscribe('wallFound', () => {
-      // Переход хода другому игроку
       this.setStatus('Компьтер наткнулся на стену, ваш ход!')
       Game.forbidToMove('bot')
       Game.allowToMove('player')
@@ -21,28 +20,29 @@ export default class BotGame extends Game {
 
   makeBotMove() {
     this.setTitleStatus()
-    // делаем ход ботом если можем
     if (Game.availableToMove.bot === 0) {
-      // looking for best way
-      const move = findBotWay(this.player.matrixAI, this.player.positionIndexes)
-      // make a move
-      const result = this.player.move(move.move)
-      this.chekGameElement()
-
+      const {move} = findBotWay(this.player.matrixAI, this.player.positionIndexes)
+      const result = this.player.move(move)
       if (result) {
+        this.chekGameElement()
         setTimeout(this.makeBotMove.bind(this), MOVE_DELAY)
       } else {
-        this.setTitleStatus()
-        setTimeout(() => {
-          if (Game.allowToMove('player')) {
-            this.setTitleStatus()
+        const playerBlock = Game.allowToMove('player')
+        this.setTitleStatus(true)
+        if (playerBlock) {
+          setTimeout(() => {
+            Game.allowToMove('bot')
             this.makeBotMove()
-          }
-        }, MOVE_DELAY)
+          }, MOVE_DELAY)
+        }
       }
-      // иначе передаем ход игроку
-    } else if (Game.allowToMove('player')) {
-      this.makeBotMove()
+    } else {
+      const playerBlock = Game.allowToMove('player')
+      this.setTitleStatus(true)
+      if (playerBlock) {
+        Game.allowToMove('bot')
+        this.makeBotMove()
+      }
     }
     this.setTitleStatus()
   }

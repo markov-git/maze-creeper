@@ -9,10 +9,8 @@ export default class PlayerGame extends Game {
 
   init() {
     super.init()
-
     this.unsubs.push(
       this.emitter.subscribe('wallFound', () => {
-        // Переход хода другому игроку
         this.setStatus('Вы наткнулись на стену, ход противника!')
         Game.forbidToMove('player')
         this.setTitleStatus()

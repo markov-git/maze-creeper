@@ -96,14 +96,16 @@ export class Game {
     return this.localTitles.find(el => el.type === this.type).node
   }
 
-  setTitleStatus() {
-    const count = Game.availableToMove[this.type]
-    if (count) {
-      const message = `Пропуск ${count} ${count === 1 ? 'хода' : 'ходов'}`
-      this.setLocalStatus(message, this.myTitle)
-    } else {
-      this.setLocalStatus('', this.myTitle)
-    }
+  get opponentTitle() {
+    return this.localTitles.find(el => el.type !== this.type).node
+  }
+
+  setTitleStatus(isOpponent) {
+    const candidate = isOpponent ? 'player' : this.type
+    const count = Game.availableToMove[candidate]
+    const title = isOpponent ? this.opponentTitle : this.myTitle
+    const message = count ? `Пропуск ${count} ${count === 1 ? 'хода' : 'ходов'}` : ''
+    this.setLocalStatus(message, title)
   }
 
   addElementToRandomPos(element, number = 1) {
