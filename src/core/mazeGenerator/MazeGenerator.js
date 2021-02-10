@@ -117,7 +117,6 @@ class MazeGenerator {
         this.removeEndBorders()
         return this.grid
     }
-
 }
 
 export function initMaze({cols, rows}) {

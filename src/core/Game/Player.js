@@ -1,16 +1,13 @@
-import {SHIELD_SIZE} from "@core/constants"
-import {translateToCenter} from "@core/utils"
-import {fillMatrix, initMatrix} from "@core/painter/painter.matrixLogic";
+import {SHIELD_SIZE} from '@core/constants'
+import {translateToCenter} from '@core/utils'
+import {fillMatrix, initMatrix} from '@core/painter/painter.matrixLogic'
 
 export class Player {
-  constructor(prop, matrix) {
-    this.position = {x: prop.x, y: prop.y}
+  constructor(prop) {
+    Object.assign(this, prop)
     this.centerPosition = translateToCenter(this.position)
     this.foundedWalls = []
-    this.matrix = matrix
-    this.matrixAI = initMatrix(fillMatrix(matrix, ''))
-    this.emitMove = prop.emitMove
-    this.emitWall = prop.emitWall
+    this.matrixAI = initMatrix(fillMatrix(this.matrix, ''))
     this.color = 'red'
     this.testPosition()
   }

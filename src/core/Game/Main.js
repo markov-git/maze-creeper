@@ -1,6 +1,7 @@
-import {Game} from '@core/Game/Game'
 import {autoMode, chooseMode, sizeMode} from '@core/templates/chooseForms'
 import {Emitter} from '@core/Emitter'
+import BotGame from '@core/Game/BotGame'
+import PlayerGame from '@core/Game/PlayerGame'
 
 class Main {
   constructor() {
@@ -8,6 +9,7 @@ class Main {
     this.$status = document.querySelector('#status')
     this.unsubs = []
     this.games = []
+    this.localTitles = []
     this.emitter = new Emitter()
   }
 
@@ -39,24 +41,50 @@ class Main {
       this.$app.innerHTML = ''
 
       if (this.PVEmode && autoMode) { // против бота с автогенерацией лабиринта
-        this.createGameBoard({size: {cols: this.size, rows: this.size}, random: autoMode, fogOfWar: true, botMode: false})
-        this.createGameBoard({size: {cols: this.size, rows: this.size}, random: autoMode, fogOfWar: false, botMode: true})
+        this.createGameBoard({
+          size: {cols: this.size, rows: this.size},
+          random: autoMode,
+          fogOfWar: true,
+          botMode: false
+        })
+        this.createGameBoard({
+          size: {cols: this.size, rows: this.size},
+          random: autoMode,
+          fogOfWar: false,
+          botMode: true
+        })
       } else if (this.PVEmode && !autoMode) { // против бота с ручной генерацией лабиринта
         this.emitter.subscribe('maze-finished', mazeMatrix => {
           this.$app.innerHTML = ''
           this.createGameBoard({size: {cols: this.size, rows: this.size}, random: true, fogOfWar: true, botMode: false})
-          this.createGameBoard({size: {cols: this.size, rows: this.size}, random: true, fogOfWar: false, botMode: true, mazeMatrix})
+          this.createGameBoard({
+            size: {cols: this.size, rows: this.size},
+            random: true,
+            fogOfWar: false,
+            botMode: true,
+            mazeMatrix
+          })
         })
         const emit = function (mazeMatrix) {
           return this.emitter.emit('maze-finished', mazeMatrix)
         }
 
-        this.createGameBoard({size: {cols: this.size, rows: this.size}, random: autoMode, fogOfWar: true, botMode: false, mazeMatrix: false, emit: emit.bind(this)})
+        this.createGameBoard({
+          size: {cols: this.size, rows: this.size},
+          random: autoMode,
+          fogOfWar: true,
+          botMode: false,
+          mazeMatrix: false,
+          emit: emit.bind(this)
+        })
       } else {  // против другого игрока
         this.$app.insertAdjacentHTML('beforeend', `
                 <h1>ERROR</h1>
                 <div>Sorry, now it's doesn't work :(</div>
             `)
+      }
+      for (const game of this.games) {
+        game.saveLocalTitles(this.localTitles)
       }
       this.unsubs.push(this.emitter.subscribe('nextStep', () => {
         // открыть возможность хода другого игрока
@@ -99,7 +127,7 @@ class Main {
     $div.appendChild($canvas)
     this.$app.appendChild($div)
 
-    Game.localHeaders.push($title)
+    this.localTitles.push({node: $title, type: props.botMode ? 'bot' : 'player'})
 
     const emitNextPlayer = () => {
       this.emitter.emit('nextStep')
@@ -119,14 +147,16 @@ class Main {
       }
     }
 
-    const game = new Game(
-      {
-        $canvas,
-        setStatus,
-        emitNextPlayer,
-        setLocalStatus,
-        ...props
-      })
+    // not sure that mutation will work correctly!
+    let game = {
+      $canvas,
+      setStatus,
+      emitNextPlayer,
+      setLocalStatus,
+      ...props
+    }
+    game = props.botMode ? new BotGame(game) : new PlayerGame(game)
+
     this.games.push(game)
   }
 }

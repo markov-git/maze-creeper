@@ -1,12 +1,12 @@
-import {Painter} from "@core/painter/Painter"
-import {SHIELD_SIZE} from "@core/constants"
-import {aroundPos, freeSpaceMatrix, localCoords, testInside} from "@core/painter/painter.coordinats"
-import {fillMatrix, invertMatrix} from "@core/painter/painter.matrixLogic"
-import {calculateItems} from "@core/utils"
+import {Painter} from '@core/painter/Painter'
+import {SHIELD_SIZE} from '@core/constants'
+import {aroundPos, freeSpaceMatrix, localCoords, testInside} from '@core/painter/painter.coordinats'
+import {fillMatrix, invertMatrix} from '@core/painter/painter.matrixLogic'
+import {calculateItems} from '@core/utils'
 
 export class PainterBuilder extends Painter {
-  constructor(canvas, props) {
-    super(canvas, props)
+  constructor(props) {
+    super(props)
     this.gameIsReady = props.gameIsReady
     this.emitFinishMaze = props.emitFinishMaze
     if (!this.gameIsReady) {
@@ -152,7 +152,6 @@ export class PainterBuilder extends Painter {
 
       if (this.spaceMatrix[row][col]) {
         this.pathMatrix[row][col] = true
-
         this.recalculateSpaces()
       }
     }
