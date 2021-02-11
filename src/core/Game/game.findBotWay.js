@@ -40,7 +40,9 @@ function moveBack(matrix, y, x) {
     return move
   } else {
     // algorithm to made a path to closest unresearched shield
-
+    const debug = findPathToEll(matrix, {y, x}, '')
+    console.log(debug)
+    return debug // :Array
   }
 }
 
@@ -50,4 +52,32 @@ function isNotResearched(matrix, {y, x}) {
     && y < matrix.length
     && x > 0
     && x < matrix[0].length
+}
+
+function isMovable(matrix, {y, x}) {
+  return matrix[y][x] === 'path' || matrix[y][x] === 'lockup'
+}
+
+function getMovableIndexes(matrix, {y, x}) {
+  const priority = createRandomPriority()
+  while (priority.length) {
+    const candidate = priority.pop()
+    const candidateIndexes = candidate.indexes(y, x)
+    if (isNotResearched(matrix, candidateIndexes) && isMovable(matrix, candidateIndexes)) { // если туда можно пойти
+      return {index: candidateIndexes, move: candidate.direction}
+    }
+  }
+  throw new Error('Something go wrong, there are no spaces to move')
+}
+
+function findPathToEll(matrix, position, element) {
+  const reachable = [position]
+  const explored = []
+  // const path = []
+
+  const {index, move} = getMovableIndexes(matrix, position)
+
+  if (matrix[index.y][index.x] === element) {
+    return path // need to generate right path to this ell
+  }
 }
