@@ -1,44 +1,50 @@
-import direction from './game.directions'
-import {SHIELD_SIZE} from "@core/constants";
+import initPriority from './game.initPriority'
 
 export function findBotWay(matrix, {x, y}) {
   matrix[y][x] = 'path'
-  if (isNotResearched(matrix, y + 1, x)) {
-    return {
-      // meta: true,
-      move: direction.down
+  console.log(matrix.map(row => row.map(el => el === '' ? 'oooo' : el)))  // dev
+
+  const priority = createRandomPriority()
+
+  while (priority.length) {
+    const candidate = priority.pop()
+    if (isNotResearched(matrix, candidate.indexes(y, x))) {
+      return candidate.direction
     }
-  } else if (isNotResearched(matrix, y, x + 1)) {
-    return {
-      // meta: true,
-      move: direction.right
-    }
-  } else if (isNotResearched(matrix, y - 1, x)) {
-    return {
-      // meta: true,
-      move: direction.up
-    }
-  } else if (isNotResearched(matrix, y, x - 1)) {
-    return {
-      // meta: true,
-      move: direction.left
-    }
+  }
+  return moveBack(matrix, y, x)
+}
+
+function createRandomPriority() {
+  const array = initPriority()
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    const temp = array[i]
+    array[i] = array[j]
+    array[j] = temp
+  }
+  return array
+}
+
+function moveBack(matrix, y, x) {
+  let move, newY, newX
+  matrix[y][x] = 'lockup'
+  const priority = createRandomPriority()
+  do {
+    const candidate = priority.pop()
+    move = candidate.direction
+    newX = candidate.indexes(y, x).x
+    newY = candidate.indexes(y, x).y
+  } while (matrix[newY][newX] !== 'path' && priority.length)
+  if (matrix[newY][newX] === 'path') {
+    return move
   } else {
-    let returnMove, newY, newX
-    matrix[y][x] = 'lockup'
-    do {
-      returnMove = direction.return
-      newX = x + returnMove.x / SHIELD_SIZE
-      newY = y + returnMove.y / SHIELD_SIZE
-    } while (matrix[newY][newX] !== 'path')
-    return {
-      // meta: true,
-      move: returnMove
-    }
+    // algorithm to made a path to closest unresearched shield
+
   }
 }
 
-function isNotResearched(matrix, y, x) {
+function isNotResearched(matrix, {y, x}) {
   return matrix[y][x] === ''
     && y > 0
     && y < matrix.length

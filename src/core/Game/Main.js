@@ -44,7 +44,7 @@ class Main {
         this.createGameBoard({
           size: {cols: this.size, rows: this.size},
           random: autoMode,
-          fogOfWar: false, // def!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+          fogOfWar: true,
           botMode: false
         })
         this.createGameBoard({
@@ -152,7 +152,6 @@ class Main {
       }
     }
 
-    // not sure that mutation will work correctly!
     let game = {
       $canvas,
       setStatus,

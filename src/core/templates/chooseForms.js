@@ -13,7 +13,8 @@ export function sizeMode() {
     return `
         <div class="choose__form">
             <h1>Размер поля</h1>
-            <p data-size="3">5х5</p>
+<!--            <p data-size="3">5х5</p>-->
+<!--            <p data-size="3">5х5</p>-->
             <p data-size="4">7х7</p>
             <p data-size="5">9х9</p>
             <p data-size="6">11х11</p>

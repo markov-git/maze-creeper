@@ -40,7 +40,7 @@ export default class BotGame extends Game {
   }
 
   tryToMove() {
-    const {move} = findBotWay(this.player.matrixAI, this.player.positionIndexes)
+    const move = findBotWay(this.player.matrixAI, this.player.positionIndexes)
     const result = this.player.move(move)
     if (result) {
       this.chekGameElement()
