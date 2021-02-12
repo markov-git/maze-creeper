@@ -1,55 +1,58 @@
 import {createRandomPriority, isNotResearched} from '@core/Game/game.findBotWay'
 
 export default function (matrix, position, ell) {
-  Node.matrix = matrix
-  const reachable = [new Node(position)] // узлы в которые мы знаем как попасть из первого
-  const explored = [] //уже рассмотренные узлы
+  const reachable = [{position}]
+  const explored = []
 
-  while(reachable.length) {
-    const candidate = reachable[0].neighbor
-
-    if (candidate) {
-
-      const {x: candidateX, y: candidateY} = candidate.position
-      if (matrix[candidateY][candidateX] === ell) {
-        return [...candidate.from, candidate.position]
-      } else {
-        explored.push(reachable.shift())
-
-        reachable.push(new Node(candidate.position))
-        // need to draw this schema
-      }
-
-    }
-  }
-}
-
-class Node {
-  static matrix = []
-
-  constructor(position) {
-    this.position = position  // {x: 2, y: 2}
-    this.neighbors = getNeighbor(Node.matrix, position)
-  }
-
-  get neighbor() {
-    if (this.neighbors.length) {
-      return {
-        position: this.neighbors.pop(),
-        from: [this.position]
-      }
+  while (reachable.length) {
+    const node = chooseNode()
+    const {x, y} = node.position
+    if (matrix[y][x] === ell) {
+      return buildPath(node)
     } else {
-      return false
+      let neighbors = findNeighbors(node.position)
+      neighbors = neighbors.filter(pos => {
+        return explored.findIndex(n => n.position.x === pos.x && n.position.y === pos.y) === -1
+      })
+      neighbors = neighbors.map(pos => {
+        return {
+          position: pos,
+          previous: node.position
+        }
+      })
+      reachable.push(...neighbors)
+      explored.push(node)
     }
+  }
+
+  if (!reachable.length) {
+    console.log('matrix', matrix)
+    console.log('explored', explored)
+    throw new Error('Ничего не нашли')
+  }
+
+  function buildPath(toNode) {
+    const path = []
+    while (toNode.position && toNode.previous) {
+      path.push(toNode.position)
+      const {x, y} = toNode.previous
+      toNode = explored.find(n => n.position.x === x && n.position.y === y)
+    }
+    return path.reverse()
+  }
+
+  function findNeighbors({y, x}) {
+    return createRandomPriority()
+      .map(step => step.indexes(y, x))
+      .filter(indexes => isNotResearched(matrix, indexes) && isMovable(matrix, indexes))
+  }
+
+  function chooseNode() {
+    const index = Math.round(Math.random() * (reachable.length - 1))
+    return reachable.splice(index, 1)[0]
   }
 }
 
-function getNeighbor(matrix, {y, x}) {
-  return createRandomPriority()
-    .map(step => step.indexes(y, x))
-    .filter(indexes => isNotResearched(matrix, indexes) && isMovable(matrix, indexes))
-}
-
-function isMovable(matrix, {y, x}) {  // this maybe wil be needed '' shield
-  return matrix[y][x] === 'path' || matrix[y][x] === 'lockup'
+function isMovable(matrix, {y, x}) {
+  return matrix[y][x] === 'path' || matrix[y][x] === 'lockup' || matrix[y][x] === ''
 }

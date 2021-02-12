@@ -3,7 +3,6 @@ import findByAStar from './game.AStar'
 
 export function findBotWay(matrix, {x, y}) {
   matrix[y][x] = 'path'
-  // console.log(matrix.map(row => row.map(el => el === '' ? 'oooo' : el)))  // dev
 
   const priority = createRandomPriority()
 
@@ -43,7 +42,7 @@ function moveBack(matrix, y, x) {
   } else {
     // algorithm to made a path to closest unresearched shield
     const debug = findByAStar(matrix, {y, x}, '')
-    console.log(debug)
+    debugger // a way to work with Array
     return debug // :Array
   }
 }
