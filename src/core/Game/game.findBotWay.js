@@ -1,21 +1,23 @@
 import initPriority from './game.initPriority'
+import findByAStar from './game.AStar'
 
 export function findBotWay(matrix, {x, y}) {
   matrix[y][x] = 'path'
-  console.log(matrix.map(row => row.map(el => el === '' ? 'oooo' : el)))  // dev
+  // console.log(matrix.map(row => row.map(el => el === '' ? 'oooo' : el)))  // dev
 
   const priority = createRandomPriority()
 
   while (priority.length) {
     const candidate = priority.pop()
-    if (isNotResearched(matrix, candidate.indexes(y, x))) {
+    const newIndexes = candidate.indexes(y, x)
+    if (isNotResearched(matrix, newIndexes) && matrix[newIndexes.y][newIndexes.x] === '') {
       return candidate.direction
     }
   }
   return moveBack(matrix, y, x)
 }
 
-function createRandomPriority() {
+export function createRandomPriority() {
   const array = initPriority()
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1))
@@ -40,44 +42,16 @@ function moveBack(matrix, y, x) {
     return move
   } else {
     // algorithm to made a path to closest unresearched shield
-    const debug = findPathToEll(matrix, {y, x}, '')
+    const debug = findByAStar(matrix, {y, x}, '')
     console.log(debug)
     return debug // :Array
   }
 }
 
-function isNotResearched(matrix, {y, x}) {
-  return matrix[y][x] === ''
-    && y > 0
+export function isNotResearched(matrix, {y, x}) {
+  return y > 0
     && y < matrix.length
     && x > 0
     && x < matrix[0].length
 }
 
-function isMovable(matrix, {y, x}) {
-  return matrix[y][x] === 'path' || matrix[y][x] === 'lockup'
-}
-
-function getMovableIndexes(matrix, {y, x}) {
-  const priority = createRandomPriority()
-  while (priority.length) {
-    const candidate = priority.pop()
-    const candidateIndexes = candidate.indexes(y, x)
-    if (isNotResearched(matrix, candidateIndexes) && isMovable(matrix, candidateIndexes)) { // если туда можно пойти
-      return {index: candidateIndexes, move: candidate.direction}
-    }
-  }
-  throw new Error('Something go wrong, there are no spaces to move')
-}
-
-function findPathToEll(matrix, position, element) {
-  const reachable = [position]
-  const explored = []
-  // const path = []
-
-  const {index, move} = getMovableIndexes(matrix, position)
-
-  if (matrix[index.y][index.x] === element) {
-    return path // need to generate right path to this ell
-  }
-}
