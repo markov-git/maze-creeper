@@ -1,8 +1,17 @@
 import initPriority from './game.initPriority'
 import findByAStar from './game.AStar'
+import direction from './game.directions'
 
-export function findBotWay(matrix, {x, y}) {
-  matrix[y][x] = 'path'
+export function findBotWay(matrix, {x, y}, isHasKey) {
+  if (isHasKey) {
+    if (!_once) {
+      _once = true
+      _pathToGoal.splice(0, _pathToGoal.length)
+    }
+    return getNextStepToGoal(matrix, {y, x}, 'exit')
+  }
+
+  matrix[y][x] = matrix[y][x] === 'exit' ? 'exit' : 'path'
 
   const priority = createRandomPriority()
 
@@ -27,9 +36,9 @@ export function createRandomPriority() {
   return array
 }
 
-function moveBack(matrix, y, x) {
+function moveBack(matrix, y, x) { // we here if others way close
   let move, newY, newX
-  matrix[y][x] = 'lockup'
+  matrix[y][x] = matrix[y][x] === 'exit' ? 'exit' : 'lockup'
   const priority = createRandomPriority()
   do {
     const candidate = priority.pop()
@@ -40,11 +49,45 @@ function moveBack(matrix, y, x) {
   if (matrix[newY][newX] === 'path') {
     return move
   } else {
-    // algorithm to made a path to closest unresearched shield
-    const debug = findByAStar(matrix, {y, x}, '')
-    debugger // a way to work with Array
-    return debug // :Array
+    return getNextStepToGoal(matrix, {y, x}, '')
   }
+}
+
+function getNextStepToGoal(matrix, myPos, goal) {
+  if (_pathToGoal.length) {
+    return _pathToGoal.pop()
+  } else {
+    const indexesPath = findByAStar(matrix, myPos, goal)
+    normalizeAndSave(myPos, indexesPath)
+    return _pathToGoal.pop()
+  }
+}
+
+const _pathToGoal = []
+let _once = false
+
+function normalizeAndSave(from, path) { // [{x: 0, y: 0},{x: 0, y: 1}...]
+  let lastPos = from
+  const normalize = path.map(pos => {
+    if (pos.y > lastPos.y) {
+      lastPos = pos
+      return direction.down
+    }
+    if (pos.y < lastPos.y) {
+      lastPos = pos
+      return direction.up
+    }
+    if (pos.x > lastPos.x) {
+      lastPos = pos
+      return direction.right
+    }
+    if (pos.x < lastPos.x) {
+      lastPos = pos
+      return direction.left
+    }
+    throw new Error('Something went wrong in normalize')
+  }).reverse()
+  _pathToGoal.push(...normalize)
 }
 
 export function isNotResearched(matrix, {y, x}) {

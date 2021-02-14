@@ -1,25 +1,33 @@
 import {createRandomPriority, isNotResearched} from '@core/Game/game.findBotWay'
 
-export default function (matrix, position, ell) {
-  const reachable = [{position}]
+export default function (matrix, position, goal) {
+  const reachable = [{position, cost: 0}]
   const explored = []
 
   while (reachable.length) {
     const node = chooseNode()
     const {x, y} = node.position
-    if (matrix[y][x] === ell) {
+    if (matrix[y][x] === goal) {
       return buildPath(node)
     } else {
-      let neighbors = findNeighbors(node.position)
-      neighbors = neighbors.filter(pos => {
-        return explored.findIndex(n => n.position.x === pos.x && n.position.y === pos.y) === -1
-      })
-      neighbors = neighbors.map(pos => {
-        return {
-          position: pos,
-          previous: node.position
-        }
-      })
+      const neighbors = findNeighbors(node.position)
+        .filter(pos => {
+          return explored.findIndex(n => n.position.x === pos.x && n.position.y === pos.y) === -1
+        })
+        .map(pos => {
+          return {
+            position: pos,
+            previous: node.position,
+            cost: Infinity
+          }
+        })
+        .map(n => {
+          if (node.cost + 1 < n.cost) {
+            n.previous = node.position
+            n.cost = node.cost + 1
+          }
+          return n
+        })
       reachable.push(...neighbors)
       explored.push(node)
     }
@@ -48,11 +56,18 @@ export default function (matrix, position, ell) {
   }
 
   function chooseNode() {
-    const index = Math.round(Math.random() * (reachable.length - 1))
+    let index = Math.round(Math.random() * (reachable.length - 1))
+    let minCost = Infinity
+    reachable.forEach((n, i) => {
+      if (n.cost < minCost) {
+        minCost = n.cost
+        index = i
+      }
+    })
     return reachable.splice(index, 1)[0]
   }
 }
 
 function isMovable(matrix, {y, x}) {
-  return matrix[y][x] === 'path' || matrix[y][x] === 'lockup' || matrix[y][x] === ''
+  return ['path', 'lockup', '', 'exit'].includes(matrix[y][x])
 }

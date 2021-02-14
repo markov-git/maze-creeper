@@ -17,7 +17,8 @@ export class Game {
 
   static availableToMove = {
     player: 0,
-    bot: 0
+    bot: 0,
+    gameBlocked: false
   }
 
   static forbidToMove(who, num = 1) {
@@ -120,19 +121,19 @@ export class Game {
   }
 
   chekGameElement() {
-    const gameElement = this.board.getCurrentGameElement(this.player.positionIndexes)
+    const currentPlayerPosition = this.player.positionIndexes
+    const gameElement = this.board.getCurrentGameElement(currentPlayerPosition)
     switch (gameElement) {
       case 'activeExitImage':
         // Game Over
         this.exitAction(true)
-        // dev option
-        Game.availableToMove.bot = Game.availableToMove.player = 500
+        Game.availableToMove.gameBlocked = true
         setTimeout(() => {
           window.location.reload()
         }, 1000)
         break
       case 'passiveExitImage':
-        this.exitAction(false)
+        this.exitAction(false, currentPlayerPosition)
         break
       case 'keyImage':
         // Message that key found and switch exitBlock

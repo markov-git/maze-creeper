@@ -6,6 +6,7 @@ export default class BotGame extends Game {
   constructor(props) {
     super(props)
     this.type = 'bot'
+    this.exitIsFound = false
   }
 
   init() {
@@ -20,7 +21,7 @@ export default class BotGame extends Game {
 
   makeBotMove() {
     this.setTitleStatus()
-    if (Game.availableToMove.bot === 0) {
+    if (Game.availableToMove.bot === 0 && !Game.availableToMove.gameBlocked) {
       this.tryToMove()
     } else {
       this.allowPlayerToMove()
@@ -40,7 +41,8 @@ export default class BotGame extends Game {
   }
 
   tryToMove() {
-    const move = findBotWay(this.player.matrixAI, this.player.positionIndexes)
+    const isHasKey = this.inventory.includes('keyImage') && this.exitIsFound
+    const move = findBotWay(this.player.matrixAI, this.player.positionIndexes, isHasKey)
     const result = this.player.move(move)
     if (result) {
       this.chekGameElement()
@@ -52,9 +54,13 @@ export default class BotGame extends Game {
     }
   }
 
-  exitAction(mode) {
+  exitAction(mode, pos) {
     const message = mode ? 'Компьютер победил' : 'Компьютеру нужен ключ чтобы выйти из лабиринта!'
     this.setStatus(message)
+    if (!mode && pos) {
+      this.exitIsFound = true
+      this.player.matrixAI[pos.y][pos.x] = 'exit'
+    }
   }
 
   keyAction() {
