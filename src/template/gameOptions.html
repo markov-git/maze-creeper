@@ -9,19 +9,89 @@
   <title>Game Options</title>
 </head>
 <body>
-  <div class="option-container">
-    <div class="board">
-      <div class="board__title unselectable"><h1>Настройки игры</h1></div>
+<div class="option-container">
 
-      <div class="board__game-mode">
+  <form action="#" class="board">
 
-        <label class="switcher">
-          <input type="checkbox" id="switcher">
-          <span class="slider"></span>
+    <div class="board__title unselectable"><h1>Настройки игры</h1></div>
+
+    <div class="board__game-mode">
+      <h4 class="unselectable">Режим игры</h4>
+
+      <div class="board__options">
+        <label class="board__option shadow unselectable" for="bot-mode" id="bot-checkbox">
+          <span class="switcher">
+            <input type="checkbox" id="bot-mode" checked>
+            <span class="slider"></span>
+          </span>
+          Против компьютера
         </label>
-        <span>Против другого игрока</span>
+
+        <label class="board__option shadow unselectable" for="player-mode" id="player-checkbox">
+          <span class="switcher">
+            <input type="checkbox" id="player-mode">
+            <span class="slider"></span>
+          </span>
+          Против другого игрока
+        </label>
       </div>
     </div>
-  </div>
+
+    <div class="board__game-mode">
+      <h4 class="unselectable">Режим построения лабиринта противнику</h4>
+
+      <div class="board__options">
+        <label class="board__option shadow unselectable" for="auto-mode" id="auto-checkbox">
+          <span class="switcher">
+            <input type="checkbox" id="auto-mode" checked>
+            <span class="slider"></span>
+          </span>
+          Сгенерировать лабиринт
+        </label>
+
+        <label class="board__option shadow unselectable" for="handle-mode" id="handle-checkbox">
+          <span class="switcher">
+            <input type="checkbox" id="handle-mode">
+            <span class="slider"></span>
+          </span>
+          Нарисовать самому
+        </label>
+
+      </div>
+
+    </div>
+
+    <button class="btn shadow">Начать игру</button>
+
+  </form>
+
+</div>
+
+<script>
+  const form = document.querySelector('.board')
+
+  const playerMode = form.querySelector('#player-checkbox input')
+  const botMode = form.querySelector('#bot-checkbox input')
+  const autoMode = form.querySelector('#auto-checkbox input')
+  const handleMode = form.querySelector('#handle-checkbox input')
+  playerMode.addEventListener('click', () => {
+    botMode.checked = !botMode.checked
+  })
+  botMode.addEventListener('click', () => {
+    playerMode.checked = !playerMode.checked
+  })
+  autoMode.addEventListener('click', () => {
+    handleMode.checked = !handleMode.checked
+  })
+  handleMode.addEventListener('click', () => {
+    autoMode.checked = !autoMode.checked
+  })
+
+  form.addEventListener('submit', e => {
+    e.preventDefault()
+    console.log(playerMode.checked)
+    console.log(botMode.checked)
+  })
+</script>
 </body>
 </html>
