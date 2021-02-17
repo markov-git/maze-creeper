@@ -11,16 +11,12 @@ export default function (matrix, position, goal) {
       return buildPath(node)
     } else {
       const neighbors = findNeighbors(node.position)
-        .filter(pos => {
-          return explored.findIndex(n => n.position.x === pos.x && n.position.y === pos.y) === -1
-        })
-        .map(pos => {
-          return {
-            position: pos,
-            previous: node.position,
-            cost: Infinity
-          }
-        })
+        .filter(pos => explored.findIndex(n => n.position.x === pos.x && n.position.y === pos.y) === -1)
+        .map(pos => ({
+          position: pos,
+          previous: node.position,
+          cost: Infinity
+        }))
         .map(n => {
           if (node.cost + 1 < n.cost) {
             n.previous = node.position
