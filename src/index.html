@@ -9,12 +9,104 @@
     <title>Maze Creeper</title>
 </head>
 <body>
-<div class="header">
+<div class="header unselectable">
     <div class="header__content">
         <h2>Maze-creeper game</h2>
         <div id="status"></div>
     </div>
 </div>
-<div id="app" class="app"></div>
+
+<div class="option-container" id="option-container">
+
+    <form action="#" class="board">
+
+        <div class="board__title unselectable"><h1>Настройки игры</h1></div>
+
+        <div class="board__game-mode">
+            <h4 class="unselectable">Режим игры</h4>
+
+            <div class="board__options">
+                <label class="board__option shadow unselectable" for="bot-mode" id="bot-checkbox">
+          <span class="switcher">
+            <input type="checkbox" id="bot-mode" checked>
+            <span class="slider"></span>
+          </span>
+                    Против компьютера
+                </label>
+
+                <label class="board__option shadow unselectable" for="player-mode" id="player-checkbox">
+          <span class="switcher">
+            <input type="checkbox" id="player-mode">
+            <span class="slider"></span>
+          </span>
+                    Против другого игрока
+                </label>
+            </div>
+        </div>
+
+        <div class="board__game-mode">
+            <h4 class="unselectable">Размер лабиринта</h4>
+
+            <div class="board__options_radio">
+
+                <input name="size" type="radio" id="radio1" value="7">
+                <label class="board__option_radio unselectable" for="radio1">7x7</label>
+
+                <input name="size" type="radio" id="radio2" value="9">
+                <label class="board__option_radio unselectable" for="radio2">9x9</label>
+
+                <input name="size" type="radio" id="radio3" value="11">
+                <label class="board__option_radio unselectable" for="radio3">11x11</label>
+
+                <input name="size" type="radio" id="radio4" value="13" checked>
+                <label class="board__option_radio unselectable" for="radio4">13x13</label>
+
+                <input name="size" type="radio" id="radio5" value="15">
+                <label class="board__option_radio unselectable" for="radio5">15x15</label>
+
+                <input name="size" type="radio" id="radio6" value="17">
+                <label class="board__option_radio unselectable" for="radio6">17x17</label>
+
+                <input name="size" type="radio" id="radio7" value="19">
+                <label class="board__option_radio unselectable" for="radio7">19x19</label>
+
+                <input name="size" type="radio" id="radio8" value="21">
+                <label class="board__option_radio unselectable" for="radio8">21x21</label>
+
+            </div>
+
+        </div>
+
+        <div class="board__game-mode">
+            <h4 class="unselectable">Режим построения лабиринта противнику</h4>
+
+            <div class="board__options">
+                <label class="board__option shadow unselectable" for="auto-mode" id="auto-checkbox">
+          <span class="switcher">
+            <input type="checkbox" id="auto-mode" checked>
+            <span class="slider"></span>
+          </span>
+                    Сгенерировать лабиринт
+                </label>
+
+                <label class="board__option shadow unselectable" for="handle-mode" id="handle-checkbox">
+          <span class="switcher">
+            <input type="checkbox" id="handle-mode">
+            <span class="slider"></span>
+          </span>
+                    Нарисовать самому
+                </label>
+
+            </div>
+
+        </div>
+
+        <button class="btn shadow">Начать игру</button>
+
+    </form>
+
+</div>
+
+<div id="app" class="app" style="display: none;"></div>
 </body>
 </html>

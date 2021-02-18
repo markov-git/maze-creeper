@@ -1,4 +1,3 @@
-import {autoMode, chooseMode, sizeMode} from '@core/templates/chooseForms'
 import {Emitter} from '@core/Emitter'
 import BotGame from '@core/Game/BotGame'
 import PlayerGame from '@core/Game/PlayerGame'
@@ -7,119 +6,95 @@ class Main {
   constructor() {
     this.$app = document.querySelector('#app')
     this.$status = document.querySelector('#status')
+    this.$optionContainer = document.querySelector('#option-container')
+
+    this.playerMode = this.$optionContainer.querySelector('#player-checkbox input')
+    this.botMode = this.$optionContainer.querySelector('#bot-checkbox input')
+    this.autoMode = this.$optionContainer.querySelector('#auto-checkbox input')
+    this.handleMode = this.$optionContainer.querySelector('#handle-checkbox input')
+
     this.unsubs = []
     this.games = []
     this.localTitles = []
     this.emitter = new Emitter()
+    this.initListeners()
   }
 
-  chooseGame() {
-    this.$app.insertAdjacentHTML('beforeend', chooseMode())
-    this.addModeListeners()
+  initListeners() {
+    this.playerMode.addEventListener('click', () => this.botMode.checked = !this.botMode.checked)
+    this.botMode.addEventListener('click', () => this.playerMode.checked = !this.playerMode.checked)
+    this.autoMode.addEventListener('click', () => this.handleMode.checked = !this.handleMode.checked)
+    this.handleMode.addEventListener('click', () => this.autoMode.checked = !this.autoMode.checked)
   }
 
-  addSizeListener() {
-    this.autoMaze = this.autoMaze.bind(this)
-    this.$app.addEventListener('click', this.autoMaze)
+  chooseGameOptions() {
+    const $form = this.$optionContainer.querySelector('form')
+    $form.addEventListener('submit', e => {
+      e.preventDefault()
+      this.$optionContainer.style.display = 'none'
+      this.$app.style.display = 'flex'
+      const {value: size} = $form.querySelector('input[name="size"]:checked')
+      this.runGame(+size, this.botMode.checked, this.autoMode.checked)
+    })
   }
 
-  autoMaze(event) {
-    this.size = Number(event.target.dataset.size)
-    if (this.size) {
-      this.$app.removeEventListener('click', this.autoMaze)
-      this.$app.innerHTML = ''
-      this.$app.insertAdjacentHTML('beforeend', autoMode())
-      this.runGame = this.runGame.bind(this)
-      this.$app.addEventListener('click', this.runGame)
-    }
-  }
+  runGame(size, botMode, autoMode) {
 
-  runGame(event) {
-    if (event.target.tagName === 'P') {
-      const autoMode = event.target.dataset.option === 'auto'
-      this.$app.removeEventListener('click', this.runGame)
-      this.$app.innerHTML = ''
-
-      if (this.PVEmode && autoMode) { // против бота с автогенерацией лабиринта
+    if (botMode && autoMode) { // против бота с автогенерацией лабиринта
+      this.createGameBoard({
+        size: {cols: size, rows: size},
+        random: autoMode,
+        fogOfWar: true,
+        botMode: false
+      })
+      this.createGameBoard({
+        size: {cols: size, rows: size},
+        random: autoMode,
+        fogOfWar: false,
+        botMode: true
+      })
+    } else if (botMode && !autoMode) { // против бота с ручной генерацией лабиринта
+      this.emitter.subscribe('maze-finished', mazeMatrix => {
+        this.$app.innerHTML = ''
         this.createGameBoard({
-          size: {cols: this.size, rows: this.size},
-          random: autoMode,
+          size: {cols: size, rows: size},
+          random: true,
           fogOfWar: true,
           botMode: false
         })
         this.createGameBoard({
-          size: {cols: this.size, rows: this.size},
-          random: autoMode,
+          size: {cols: size, rows: size},
+          random: true,
           fogOfWar: false,
-          botMode: true
+          botMode: true,
+          mazeMatrix
         })
-      } else if (this.PVEmode && !autoMode) { // против бота с ручной генерацией лабиринта
-        this.emitter.subscribe('maze-finished', mazeMatrix => {
-          this.$app.innerHTML = ''
-          this.createGameBoard({
-            size: {cols: this.size, rows: this.size},
-            random: true,
-            fogOfWar: true,
-            botMode: false
-          })
-          this.createGameBoard({
-            size: {cols: this.size, rows: this.size},
-            random: true,
-            fogOfWar: false,
-            botMode: true,
-            mazeMatrix
-          })
-        })
-        const emit = function (mazeMatrix) {
-          return this.emitter.emit('maze-finished', mazeMatrix)
-        }
+      })
 
-        this.createGameBoard({
-          size: {cols: this.size, rows: this.size},
-          random: autoMode,
-          fogOfWar: true,
-          botMode: false,
-          mazeMatrix: false,
-          emit: emit.bind(this)
-        })
-      } else {  // против другого игрока
-        this.$app.insertAdjacentHTML('beforeend', `
-                <h1>ERROR</h1>
-                <div>Sorry, now it's doesn't work :(</div>
-            `)
+      // need to refactor
+      const emit = function (mazeMatrix) {
+        return this.emitter.emit('maze-finished', mazeMatrix)
       }
-      for (const game of this.games) {
-        game.saveLocalTitles(this.localTitles)
-      }
-      this.unsubs.push(this.emitter.subscribe('nextStep', () => {
-        // открыть возможность хода другого игрока
-        this.games[1].makeBotMove()
-      }))
-      this.$status.innerHTML = 'Игра началась. Ход игрока...'
-    }
-  }
 
-  addModeListeners() {
-    this.pvpMode = () => {
-      this.PVEmode = false
-      this.removeModeListeners()
-      this.$app.insertAdjacentHTML('beforeend', sizeMode())
-      this.addSizeListener()
+      this.createGameBoard({
+        size: {cols: size, rows: size},
+        random: autoMode,
+        fogOfWar: true,
+        botMode: false,
+        mazeMatrix: false,
+        emit: emit.bind(this)
+      })
+    } else {  // против другого игрока
+      // also not implemented
     }
-    this.pveMode = () => {
-      this.PVEmode = true
-      this.removeModeListeners()
-      this.$app.insertAdjacentHTML('beforeend', sizeMode())
-      this.addSizeListener()
+    for (const game of this.games) {
+      game.saveLocalTitles(this.localTitles)
     }
-    this.$app.querySelector('#pvp')?.addEventListener('click', this.pvpMode)
-    this.$app.querySelector('#pve').addEventListener('click', this.pveMode)
-  }
-
-  removeModeListeners() {
-    this.$app.querySelector('#pvp')?.removeEventListener('click', this.pvpMode)
-    this.$app.querySelector('#pve').removeEventListener('click', this.pveMode)
-    this.$app.innerHTML = ''
+    this.unsubs.push(this.emitter.subscribe('nextStep', () => {
+      // открыть возможность хода другого игрока
+      this.games[1].makeBotMove()
+    }))
+    this.$status.innerHTML = 'Игра началась. Ход игрока...'
   }
 
   createGameBoard(props) {
