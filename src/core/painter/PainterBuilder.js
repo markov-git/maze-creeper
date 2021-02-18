@@ -42,8 +42,8 @@ export class PainterBuilder extends Painter {
   on() {
     this.prepare()
     if (this.gameIsReady) {
-      this.drawInventory()
-      this.updatePlayer()
+      // this.drawInventory()
+      this.drawPlayer()
       this.drawFog()
     } else {
       this.drawInterface()

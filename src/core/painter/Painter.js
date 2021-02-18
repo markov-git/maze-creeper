@@ -10,7 +10,6 @@ export class Painter {
     this.canvas.width = this.width
     this.canvas.height = this.height
     this.regionColor = 'rgb(48,105,49, 0.5)'
-    this.pathColor = 'black'
     this.images = {
       wallImage: 'img/wall32.png',
       pathImage: 'img/floor32.png',
@@ -38,6 +37,15 @@ export class Painter {
   async init() {
     this.initImages()
     await Promise.all(this.imageWaiter)
+    const canvasWidth = this.canvas.width
+    const clientHeight = document.documentElement.clientHeight - 100
+    if (canvasWidth + 120 > clientHeight) {
+      const newWidth = clientHeight - 120
+      const sc = newWidth / canvasWidth
+      this.canvas.width *= sc
+      this.canvas.height *= sc
+      this.context.scale(sc, sc)
+    }
     this.prepare()
   }
 
@@ -57,15 +65,7 @@ export class Painter {
   }
 
   on() {
-    this.prepare()
-    this.updatePlayer()
-    this.drawFog()
-    window.requestAnimationFrame(this.on.bind(this))
-  }
-
-  updatePlayer() {
-    // this.drawPlayerPath() Выглядит неочень
-    this.drawPlayer()
+    throw new Error('this method must be implemented')
   }
 
   clear() {
@@ -127,27 +127,10 @@ export class Painter {
       for (let x = 0; x < this.matrixOfFog[y].length; x++) {
         if (this.matrixOfFog[y][x]) {
           this.context.beginPath()
-          this.context.fillRect(x * SHIELD_SIZE, y * SHIELD_SIZE, SHIELD_SIZE, SHIELD_SIZE)
+          this.context.fillRect(x * SHIELD_SIZE - 1, y * SHIELD_SIZE - 1, SHIELD_SIZE + 2, SHIELD_SIZE + 2)
           this.context.closePath()
         }
       }
-    }
-  }
-
-  drawPlayerPath() {
-    const path = this.player.path
-    if (path.length > 1) {
-      this.applyColor(this.pathColor)
-      this.context.lineCap = 'round'
-      this.context.setLineDash([10, 12])
-      this.context.lineWidth = 3
-      this.context.beginPath()
-      this.context.moveTo(path[0].x, path[0].y)
-      for (let step = 1; step < path.length; step++) {
-        this.context.lineTo(path[step].x, path[step].y)
-      }
-      this.context.stroke()
-      this.context.closePath()
     }
   }
 

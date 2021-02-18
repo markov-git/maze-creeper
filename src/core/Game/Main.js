@@ -101,6 +101,7 @@ class Main {
     const $div = document.createElement('div')
     $div.classList.add('gameBoard')
     const $title = document.createElement('h2')
+    $title.classList.add('unselectable')
     $title.innerHTML = props.botMode ? 'Поле противника' : 'Твое поле'
     const $canvas = document.createElement('canvas')
     $div.appendChild($title)
@@ -120,7 +121,7 @@ class Main {
     const setLocalStatus = (message = '', node = $title) => {
       if (message === '') {
         node.innerHTML = props.botMode ? 'Твое поле' : 'Поле противника'
-        node.style.color = 'black'
+        node.style.color = '#ccc'
       } else {
         node.innerHTML = message
         node.style.color = 'darkred'

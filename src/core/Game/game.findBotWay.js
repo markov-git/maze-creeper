@@ -36,7 +36,7 @@ export function createRandomPriority() {
   return array
 }
 
-function moveBack(matrix, y, x) { // we here if others way close
+function moveBack(matrix, y, x) {
   let move, newY, newX
   matrix[y][x] = matrix[y][x] === 'exit' ? 'exit' : 'lockup'
   const priority = createRandomPriority()
@@ -66,7 +66,7 @@ function getNextStepToGoal(matrix, myPos, goal) {
 const _pathToGoal = []
 let _once = false
 
-function normalizeAndSave(from, path) { // [{x: 0, y: 0},{x: 0, y: 1}...]
+function normalizeAndSave(from, path) {
   let lastPos = from
   const normalize = path.map(pos => {
     if (pos.y > lastPos.y) {

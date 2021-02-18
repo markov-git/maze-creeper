@@ -1,4 +1,4 @@
-import {SHIELD_SIZE} from "@core/constants";
+import {SHIELD_SIZE} from '@core/constants'
 
 export function toMatrix(mazeConfig, cols, rows) {
   const config = normalizeConfig(mazeConfig)
@@ -37,7 +37,7 @@ export function initialMatrix(cols, rows) {
       return ell.map(_ => true)
     } else {
       return ell.map((cell, i) => {
-        return i === 0 || i === cols - 1;
+        return i === 0 || i === cols - 1
       })
     }
   })
