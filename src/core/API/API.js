@@ -19,6 +19,8 @@ class API {
     this.eventSource = new EventSource(URLS.SSE_URL)
     this.key = null
     this.roomID = null
+    this.name = null
+    this.pass = null
     this.initListeners()
   }
 
@@ -52,28 +54,57 @@ class API {
     })
   }
 
-  async createNewRoom() {
+  async createNewRoom(name, pass) {
     try {
-      if (this.key) {
-        await fetch(URLS.NEW_ROOM, POST_OPTIONS({name: 'name', pass: '1234', key: this.key}))
-      } else {
-        // return new Error('key is undefined')
-      }
+      this.checkKey()
+      await fetch(URLS.NEW_ROOM, POST_OPTIONS({name, pass, key: this.key}))
+      this.name = name
+      this.pass = pass
     } catch (e) {
-      console.warn('error with creating room',e)
+      console.warn('error with creating room', e)
     }
   }
 
-  async sendNewState() {
+  async sendNewState(state) {
     try {
-      if (this.key) {
-        await fetch(URLS.NEW_STATE, POST_OPTIONS({data: sendData.value, id: myRoomID, pass: '1234', key: this.key}))
-      } else {
-        // return new Error('key is undefined')
-      }
+      this.checkKey()
+      this.checkRoomId()
+      this.checkPass()
+      await fetch(URLS.NEW_STATE, POST_OPTIONS({data: state, id: this.roomID, pass: this.pass, key: this.key}))
     } catch (e) {
       console.warn('error with sending state', e)
     }
+  }
+
+  async connectToRoom(roomID, pass) {
+    try {
+      this.checkKey()
+      await fetch(URLS.CONNECT, POST_OPTIONS({id: roomID, pass, key: this.key}))
+      this.roomID = roomID
+    } catch (e) {
+      console.warn(e)
+    }
+  }
+
+  async getFreeRooms() {
+    try {
+      this.checkKey()
+      await fetch(URLS.GET_ROOMS(this.key))
+    } catch (e) {
+      console.warn(e)
+    }
+  }
+
+  checkPass() {
+    if (!this.pass) throw new Error('pass is undefined')
+  }
+
+  checkRoomId() {
+    if (!this.roomID) throw new Error('roomID is undefined')
+  }
+
+  checkKey() {
+    if (!this.key) throw new Error('key is undefined')
   }
 
   close() {

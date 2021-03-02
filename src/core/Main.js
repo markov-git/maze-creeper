@@ -1,6 +1,7 @@
 import {Emitter} from '@core/Emitter'
 import BotGame from '@core/Game/BotGame'
 import PlayerGame from '@core/Game/PlayerGame'
+import {createLobby} from '@core/Multiplayer/Lobby'
 
 class Main {
   constructor() {
@@ -31,14 +32,17 @@ class Main {
     const $form = this.$optionContainer.querySelector('form')
     $form.addEventListener('submit', e => {
       e.preventDefault()
-      this.$optionContainer.style.display = 'none'
-      this.$app.style.display = 'flex'
       const {value: size} = $form.querySelector('input[name="size"]:checked')
       this.runGame(+size, this.botMode.checked, this.autoMode.checked)
+
     })
   }
 
-  runGame(size, botMode, autoMode) {
+  runGame(size, botMode, autoMode) {  // (размер, с ботом, автогенерация)
+    if (botMode) {
+      this.$optionContainer.style.display = 'none'
+      this.$app.style.display = 'flex'
+    }
 
     if (botMode && autoMode) { // против бота с автогенерацией лабиринта
       this.createGameBoard({
@@ -85,7 +89,8 @@ class Main {
         emit: emit.bind(this)
       })
     } else {  // против другого игрока
-      // also not implemented
+      this.$optionContainer.innerHTML = createLobby()
+
     }
     for (const game of this.games) {
       game.saveLocalTitles(this.localTitles)
