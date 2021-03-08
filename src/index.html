@@ -7,53 +7,6 @@
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <link rel="shortcut icon" href="favicon.ico">
   <title>Maze Creeper</title>
-  <style>
-    .lobby__table {
-      width: 500px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-
-
-      justify-content: start;
-      padding-right: 15px;
-      min-width: 410px;
-      border-radius: 5px;
-      border: solid 3px #ccc;
-      background: #333333;
-      color: #cccccc;
-      -moz-box-shadow: 0 0 20px #333;
-      -webkit-box-shadow: 0 0 20px #333;
-      box-shadow: 0 0 20px #333;
-    }
-
-    /* хром, сафари */
-    .lobby__table tbody::-webkit-scrollbar { width: 0; }
-
-    .lobby__table tbody {
-      display: block;
-      height: 100px;
-      width: 500px;
-      overflow-y: scroll;
-    }
-
-    .lobby__table thead {
-      width: 100%;
-    }
-
-    .lobby__table thead tr {
-      display: flex;
-      justify-content: space-around;
-      width: 100%;
-    }
-
-    .lobby__table tbody tr {
-      display: flex;
-      justify-content: space-around;
-      width: 100%;
-    }
-
-  </style>
 </head>
 <body>
 <div class="header unselectable">
@@ -65,65 +18,12 @@
 
 <div class="option-container" id="option-container">
 
-  <div class="lobby board unselectable">
-    <table class="lobby__table">
-      <thead>
-      <tr>
-        <th>№</th>
-        <th>Название</th>
-        <th>Игрок</th>
-      </tr>
-      </thead>
-
-      <tbody>
-      <tr>
-        <td>1</td>
-        <td>lorem</td>
-        <td>lorem</td>
-      </tr>
-      <tr>
-        <td>1</td>
-        <td>lorem</td>
-        <td>lorem</td>
-      </tr>
-      <tr>
-        <td>1</td>
-        <td>lorem</td>
-        <td>lorem</td>
-      </tr>
-      <tr>
-        <td>1</td>
-        <td>lorem</td>
-        <td>lorem</td>
-      </tr>
-      <tr>
-        <td>1</td>
-        <td>lorem</td>
-        <td>lorem</td>
-      </tr>
-      <tr>
-        <td>1</td>
-        <td>lorem</td>
-        <td>lorem</td>
-      </tr>
-      <tr>
-        <td>1</td>
-        <td>lorem</td>
-        <td>lorem</td>
-      </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <hr style="height: 8px;">
-
   <form action="#" class="board">
 
     <div class="board__title unselectable"><h1>Настройки игры</h1></div>
 
     <div class="board__game-mode">
       <h4 class="unselectable">Режим игры</h4>
-      <!--      <span class="unselectable alert">Игра с людьми еще в разработке :(</span>-->
 
       <div class="board__options">
         <label class="board__option shadow unselectable" for="bot-mode" id="bot-checkbox">

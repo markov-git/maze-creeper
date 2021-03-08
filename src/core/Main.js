@@ -57,6 +57,14 @@ class Main {
         fogOfWar: false,
         botMode: true
       })
+      this.$status.innerHTML = 'Игра началась. Ход игрока...'
+      for (const game of this.games) {
+        game.saveLocalTitles(this.localTitles)
+      }
+      this.unsubs.push(this.emitter.subscribe('nextStep', () => {
+        // открыть возможность хода другого игрока
+        this.games[1].makeBotMove()
+      }))
     } else if (botMode && !autoMode) { // против бота с ручной генерацией лабиринта
       this.emitter.subscribe('maze-finished', mazeMatrix => {
         this.$app.innerHTML = ''
@@ -88,18 +96,10 @@ class Main {
         mazeMatrix: false,
         emit: emit.bind(this)
       })
+      this.$status.innerHTML = 'Игра началась. Ход игрока...'
     } else {  // против другого игрока
-      this.$optionContainer.innerHTML = createLobby()
-
+       createLobby(this.$optionContainer, this.$status)
     }
-    for (const game of this.games) {
-      game.saveLocalTitles(this.localTitles)
-    }
-    this.unsubs.push(this.emitter.subscribe('nextStep', () => {
-      // открыть возможность хода другого игрока
-      this.games[1].makeBotMove()
-    }))
-    this.$status.innerHTML = 'Игра началась. Ход игрока...'
   }
 
   createGameBoard(props) {
