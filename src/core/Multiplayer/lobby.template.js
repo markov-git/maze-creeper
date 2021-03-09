@@ -76,8 +76,8 @@ export function modalConnectTemplate(name) {
       <div class="modal__title unselectable">Подключение к игре "${name}"</div>
       <div class="modal__options">
         <div class="modal__option">
-          <label class="modal__label unselectable" for="password">Пароль:</label>
-          <input type="password" class="modal__input" id="password">
+          <label class="modal__label unselectable" for="mc_password">Пароль:</label>
+          <input type="password" class="modal__input" id="mc_password">
         </div>
       </div>
       <button class="button btn shadow unselectable modal_button" id="ConnectBtn">Подключиться</button>

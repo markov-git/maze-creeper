@@ -51,14 +51,19 @@ export default class API {
       open: () => {
         console.log('connected to server')
       },
+      connected: e => {
+        console.log('Подключены к комнате', e.data)
+        //если все хорошо то отписываемся !!! не место !!!
+        this.unSubscribeToEvent('rooms')
+      },
       close: () => {
         console.log('connection closed')
       },
-      error: () => {
-        console.warn('sse error')
+      error: e => {
+        const handler = this.eventHandlers.get('error')
+        handler(e.data)
       },
       message: e => {
-        console.log('sse message: ', e.data)
         const handler = this.eventHandlers.get('message')
         handler(e.data)
       },
@@ -68,9 +73,6 @@ export default class API {
       key: async e => {
         this.key = e.data
         await this.getFreeRooms()
-        this.refreshInterval = setInterval(async () => {
-          await this.getFreeRooms()
-        }, 2500)
       },
       roomID: e => {
         console.log('new roomID', e.data)

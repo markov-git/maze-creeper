@@ -3,11 +3,14 @@ import BotGame from '@core/Game/BotGame'
 import PlayerGame from '@core/Game/PlayerGame'
 import {createLobby} from '@core/Multiplayer/Lobby'
 
+const POPUP_TIMEOUT = 2000
+
 class Main {
   constructor() {
     this.$app = document.querySelector('#app')
     this.$status = document.querySelector('#status')
     this.$optionContainer = document.querySelector('#option-container')
+    this.$popup = document.querySelector('#popup')
 
     this.playerMode = this.$optionContainer.querySelector('#player-checkbox input')
     this.botMode = this.$optionContainer.querySelector('#bot-checkbox input')
@@ -98,7 +101,28 @@ class Main {
       })
       this.$status.innerHTML = 'Игра началась. Ход игрока...'
     } else {  // против другого игрока
-       createLobby(this.$optionContainer, this.$status)
+      const $popupTitle = this.$popup.querySelector('h2')
+      const showPopup = (type, message) => {
+        switch (type) {
+          case 'error': {
+            this.$popup.style.borderLeftColor = 'darkred'
+            this.$popup.style.boxShadow = '0 0 15px red'
+            break
+          }
+          default: {
+            this.$popup.style.borderLeftColor = 'darkgreen'
+            this.$popup.style.boxShadow = '0 0 15px darkgreen'
+          }
+        }
+
+        $popupTitle.innerText = message.toString()
+        this.$popup.style.right = '50px'
+        setTimeout(() => {
+          this.$popup.style.right = '-100%'
+          $popupTitle.innerText = ''
+        }, POPUP_TIMEOUT)
+      }
+      createLobby(this.$optionContainer, this.$status, showPopup)
     }
   }
 

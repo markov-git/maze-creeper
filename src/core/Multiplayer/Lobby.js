@@ -1,13 +1,18 @@
-import * as template from './lobby.template'
 import API from '@core/API/API'
-import {lobbyRowTemplates, statusRowTemplate} from './lobby.template'
+import {
+  lobbyRowTemplates,
+  lobbyTemplate,
+  modalConnectTemplate,
+  modalCreateTemplate,
+  statusRowTemplate
+} from './lobby.template'
 
 const api = new API()
 const CHOSEN_CLASS = 'chosen'
 let chosenGameId = null
 
-export function createLobby(domContainer, $status) {
-  domContainer.innerHTML = template.lobbyTemplate()
+export function createLobby(domContainer, $status, showPopup) {
+  domContainer.innerHTML = lobbyTemplate()
   api.connectToServer()
 
   const btns = {
@@ -16,13 +21,16 @@ export function createLobby(domContainer, $status) {
   }
   const lobbyBody = document.querySelector('#lobby-body')
 
+  // надо бы добавить удаление этого события
   lobbyBody.addEventListener('click', e => {
+    lobbyBody.querySelectorAll('tbody tr')
+      .forEach(tr => tr.classList.remove(CHOSEN_CLASS))
     if (e.target.dataset.id) {
       chosenGameId = e.target.dataset.id
-      lobbyBody.querySelectorAll('tbody tr')
-        .forEach(tr => tr.classList.remove(CHOSEN_CLASS))
       const chosenRow = lobbyBody.querySelector(`[data-id="${chosenGameId}"]`)
       chosenRow.classList.add(CHOSEN_CLASS)
+    } else {
+      chosenGameId = null
     }
   })
 
@@ -34,8 +42,21 @@ export function createLobby(domContainer, $status) {
     }
   })
 
+  api.subscribeToEvent('error', error => {
+    showPopup('error', error)
+  })
+
+  api.subscribeToEvent('message', message => {
+    showPopup('message', message)
+  })
+
   Object.keys(btns).forEach(key => {
-    btns[key].addEventListener('click', () => actions[key](domContainer, $status, lobbyBody))
+    btns[key].addEventListener('click', () => actions[key]({
+      dom: domContainer,
+      showPopup,
+      btns,
+      lobbyBody
+    }))
   })
 }
 
@@ -44,61 +65,87 @@ function setDisplay(dom, option) {
 }
 
 const cashedModals = {}
-const CREATE_TYPE = 'Create'
-const CONNECT_TYPE = 'Connect'
 
 const actions = {
-  create: (dom, $status, lobbyBody) => {
-    initModal(dom, CREATE_TYPE)
-    // отписываемся от прослушки свободных комнат
-    api.unSubscribeToEvent('rooms')
-    // ждем сообщения о подключении
-    api.subscribeToEvent('message', message => {
-      $status.innerHTML = lobbyBody.innerHTML = statusRowTemplate(message)
-    })
+  create: async ({dom, btns, lobbyBody}) => {
+    try {
+      await initCreateModal(dom)
+      Object.values(btns).forEach(btn => btn.disabled = true)
+      api.unSubscribeToEvent('rooms')
+      lobbyBody.innerHTML = ''
+
+      const startWaiting = new Date()
+      setInterval(() => {
+        const currentTime = new Date()
+        const d = new Date(currentTime - startWaiting)
+        const formattedTime = d.toLocaleTimeString().slice(-5)
+        lobbyBody.innerHTML = statusRowTemplate(`Ждем противника ${formattedTime}`)
+      }, 1000)
+    } catch (e) {
+    }
   },
 
-  connect: (dom, $status) => {
+  connect: async ({dom, showPopup}) => {
     if (!chosenGameId) {
-      $status.innerHTML = 'Сначала выберите игру'
+      showPopup('error', 'Сначала выберите игру')
     } else {
-      const {name, closed} = api.getRoomById(chosenGameId)
+      const {name, closed, uid} = api.getRoomById(chosenGameId)
       if (closed) {
-        initModal(dom, CONNECT_TYPE, name)
+        initConnectModal(dom, name, uid)
+      } else {
+        await api.connectRoom(uid)
       }
-      //если все хорошо то отписываемся
-      api.unSubscribeToEvent('rooms')
     }
   }
 }
 
-function initModal(dom, type, name) {
-  const modalType = `modal${type}`
-  const apiType = type.toLowerCase()
-  if (!cashedModals[modalType]) {
-    dom.insertAdjacentHTML('beforeend', template[`${modalType}Template`](name))
-    cashedModals[modalType] = dom.querySelector(`#${modalType}`)
+function initCreateModal(dom) {
+  if (!cashedModals.modalCreate) {
+    dom.insertAdjacentHTML('beforeend', modalCreateTemplate())
+    cashedModals.modalCreate = dom.querySelector('#modalCreate')
   }
-  setDisplay(cashedModals[modalType], 'block')
-  cashedModals[modalType]
-    .querySelector('.modal__dropdown')
-    .addEventListener('click', () => setDisplay(cashedModals[modalType], 'none'))
-  const btn = dom.querySelector(`#${type}Btn`)
-  const nameInput = cashedModals[modalType].querySelector('#name')
-  const nickInput = cashedModals[modalType].querySelector('#nick')
-  const passwordInput = cashedModals[modalType].querySelector('#password')
-  btn.addEventListener('click', async () => {
-    setDisplay(cashedModals[modalType], 'none')
-    const name = nameInput.value
-    const nick = nickInput.value
-    const password = passwordInput.value
-    nameInput.value = ''
-    nickInput.value = ''
-    passwordInput.value = ''
-    await api[`${apiType}Room`](name, password, nick)
+  setDisplay(cashedModals.modalCreate, 'block')
+  const btn = dom.querySelector('#CreateBtn')
+  const nameInput = cashedModals.modalCreate.querySelector('#name')
+  const nickInput = cashedModals.modalCreate.querySelector('#nick')
+  const passwordInput = cashedModals.modalCreate.querySelector('#password')
 
-    if (apiType === CREATE_TYPE.toLowerCase()) {
-      await api.getFreeRooms()
-    }
-  })
+  return new Promise(((resolve, reject) => {
+    cashedModals.modalCreate
+      .querySelector('.modal__dropdown')
+      .addEventListener('click', () => {
+        setDisplay(cashedModals.modalCreate, 'none')
+        reject()
+      })
+    btn.addEventListener('click', async () => {
+      setDisplay(cashedModals.modalCreate, 'none')
+      const name = nameInput.value
+      const nick = nickInput.value
+      const password = passwordInput.value
+      nameInput.value = ''
+      nickInput.value = ''
+      passwordInput.value = ''
+      await api.createRoom(name, password, nick)
+      resolve()
+    }, {once: true})
+  }))
+}
+
+function initConnectModal(dom, name, uid) {
+  if (!cashedModals.modalConnect) {
+    dom.insertAdjacentHTML('beforeend', modalConnectTemplate(name))
+    cashedModals.modalConnect = dom.querySelector('#modalConnect')
+  }
+  setDisplay(cashedModals.modalConnect, 'block')
+  cashedModals.modalConnect
+    .querySelector('.modal__dropdown')
+    .addEventListener('click', () => setDisplay(cashedModals.modalConnect, 'none'))
+  const btn = dom.querySelector('#ConnectBtn')
+  const passwordInput = cashedModals.modalConnect.querySelector('#mc_password')
+  btn.addEventListener('click', async () => {
+    setDisplay(cashedModals.modalConnect, 'none')
+    const password = passwordInput.value
+    passwordInput.value = ''
+    await api.connectRoom(uid, password)
+  }, {once: true})
 }
