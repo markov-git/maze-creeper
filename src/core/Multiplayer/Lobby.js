@@ -1,6 +1,6 @@
 import * as template from './lobby.template'
 import API from '@core/API/API'
-import {lobbyRowTemplates} from './lobby.template'
+import {lobbyRowTemplates, statusRowTemplate} from './lobby.template'
 
 const api = new API()
 const CHOSEN_CLASS = 'chosen'
@@ -12,7 +12,6 @@ export function createLobby(domContainer, $status) {
 
   const btns = {
     create: domContainer.querySelector('#create'),
-    refresh: domContainer.querySelector('#refresh'),
     connect: domContainer.querySelector('#connect')
   }
   const lobbyBody = document.querySelector('#lobby-body')
@@ -28,12 +27,15 @@ export function createLobby(domContainer, $status) {
   })
 
   api.subscribeToEvent('rooms', games => {
-
-    lobbyBody.innerHTML = lobbyRowTemplates(games)
+    if (games.length === 0) {
+      lobbyBody.innerHTML = statusRowTemplate('Свободных игр нет')
+    } else {
+      lobbyBody.innerHTML = lobbyRowTemplates(games)
+    }
   })
 
   Object.keys(btns).forEach(key => {
-    btns[key].addEventListener('click', () => actions[key](domContainer, $status))
+    btns[key].addEventListener('click', () => actions[key](domContainer, $status, lobbyBody))
   })
 }
 
@@ -46,8 +48,14 @@ const CREATE_TYPE = 'Create'
 const CONNECT_TYPE = 'Connect'
 
 const actions = {
-  create: dom => {
+  create: (dom, $status, lobbyBody) => {
     initModal(dom, CREATE_TYPE)
+    // отписываемся от прослушки свободных комнат
+    api.unSubscribeToEvent('rooms')
+    // ждем сообщения о подключении
+    api.subscribeToEvent('message', message => {
+      $status.innerHTML = lobbyBody.innerHTML = statusRowTemplate(message)
+    })
   },
 
   connect: (dom, $status) => {
@@ -61,10 +69,6 @@ const actions = {
       //если все хорошо то отписываемся
       api.unSubscribeToEvent('rooms')
     }
-  },
-
-  refresh: async () => {
-    await api.getFreeRooms()
   }
 }
 

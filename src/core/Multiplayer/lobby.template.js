@@ -19,17 +19,17 @@ export function lobbyTemplate() {
     </table>
     <div class="lobby__controls">
       <button class="btn shadow unselectable" id="create">Создать</button>
-      <button class="btn shadow unselectable" id="refresh">Обновить</button>
       <button class="btn shadow unselectable" id="connect">Подключиться</button>
     </div>
   </div>
   `.trim()
 }
 
+export function statusRowTemplate(message) {
+  return `<tr class="lobby__init-row" id="init-row"><td colspan="3">${message}</td></tr>`
+}
+
 export function lobbyRowTemplates(games) {
-  if (games.length === 0) {
-    return '<tr class="lobby__init-row" id="init-row"><td colspan="3">Свободных игр нет</td></tr>'
-  }
   return games.map(game => {
     return `
     <tr data-id="${game.id}">

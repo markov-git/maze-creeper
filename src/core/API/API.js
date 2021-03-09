@@ -5,7 +5,7 @@ const URLS = {
   NEW_STATE: `${BASE_URL}/sse/newState`,
   GET_ROOMS: key => `${BASE_URL}/sse/info/${key}`,
   CONNECT: `${BASE_URL}/sse/connect`,
-  REMOVE: `${BASE_URL}/sse/remove`,
+  REMOVE: `${BASE_URL}/sse/remove`
 }
 
 const POST_OPTIONS = body => ({
@@ -36,7 +36,14 @@ export default class API {
   }
 
   unSubscribeToEvent(event) {
+    this.clearIntervals()
     this.eventHandlers.delete(event)
+  }
+
+  clearIntervals() {
+    if (this.refreshInterval) {
+      clearInterval(this.refreshInterval)
+    }
   }
 
   initListeners() {
@@ -52,6 +59,8 @@ export default class API {
       },
       message: e => {
         console.log('sse message: ', e.data)
+        const handler = this.eventHandlers.get('message')
+        handler(e.data)
       },
       json: e => {
         console.log('state: ', e.data)
@@ -59,6 +68,9 @@ export default class API {
       key: async e => {
         this.key = e.data
         await this.getFreeRooms()
+        this.refreshInterval = setInterval(async () => {
+          await this.getFreeRooms()
+        }, 2500)
       },
       roomID: e => {
         console.log('new roomID', e.data)
@@ -73,7 +85,12 @@ export default class API {
           return room
         })
         const handler = this.eventHandlers.get('rooms')
-        handler(this.rooms)
+        if (handler) {
+          handler(this.rooms)
+        }
+      },
+      ping: e => {
+        console.log('ping from server', e.data)
       }
     }
 
