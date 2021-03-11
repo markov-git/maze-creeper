@@ -56,8 +56,13 @@ export class Painter {
         if (this.matrixOfMaze[y][x]) {
           this.context.drawImage(this.images.wallImage,
             x * SHIELD_SIZE, y * SHIELD_SIZE)
-        } else {
+        }
+        if (this.pathMatrix[y][x]) {
           this.context.drawImage(this.images.pathImage,
+            x * SHIELD_SIZE, y * SHIELD_SIZE)
+        }
+        if (this.matrixOfGameElements[y][x] && this.gameIsReady) {
+          this.context.drawImage(this.images[this.matrixOfGameElements[y][x]],
             x * SHIELD_SIZE, y * SHIELD_SIZE)
         }
       }

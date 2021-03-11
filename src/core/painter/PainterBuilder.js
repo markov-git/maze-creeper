@@ -19,26 +19,6 @@ export class PainterBuilder extends Painter {
     this.init()
   }
 
-  prepare() {
-    this.clear()
-    for (let y = 0; y < this.rows; y++) {
-      for (let x = 0; x < this.columns; x++) {
-        if (this.matrixOfMaze[y][x]) {
-          this.context.drawImage(this.images.wallImage,
-            x * SHIELD_SIZE, y * SHIELD_SIZE)
-        }
-        if (this.pathMatrix[y][x]) {
-          this.context.drawImage(this.images.pathImage,
-            x * SHIELD_SIZE, y * SHIELD_SIZE)
-        }
-        if (this.matrixOfGameElements[y][x] && this.gameIsReady) {
-          this.context.drawImage(this.images[this.matrixOfGameElements[y][x]],
-            x * SHIELD_SIZE, y * SHIELD_SIZE)
-        }
-      }
-    }
-  }
-
   on() {
     this.prepare()
     if (this.gameIsReady) {
@@ -201,5 +181,15 @@ export class PainterBuilder extends Painter {
     }
     this.player.testPosition()
     return res
+  }
+
+  get currentState() {
+    return {
+      matrixOfMaze: this.matrixOfMaze,
+      pathMatrix: this.pathMatrix,
+      matrixOfGameElements: this.matrixOfGameElements,
+      player: {x: this.player.centerPosition.x, y: this.player.centerPosition.y},
+      matrixOfFog: this.matrixOfFog
+    }
   }
 }

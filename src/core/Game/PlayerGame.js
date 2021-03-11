@@ -1,10 +1,12 @@
 import {Game} from '@core/Game/Game'
 import direction from '@core/Game/game.directions'
+import {GAME_MODE_NETWORK} from '@core/constants'
 
 export default class PlayerGame extends Game {
   constructor(props) {
     super(props)
     this.type = 'player'
+    // this.sendNewState = async sendNewState(state: Object)
   }
 
   init() {
@@ -13,9 +15,11 @@ export default class PlayerGame extends Game {
       this.emitter.subscribe('wallFound', () => {
         this.setStatus('Вы наткнулись на стену, ход противника!')
         Game.forbidToMove('player')
-        this.setTitleStatus()
-        Game.allowToMove('bot')
-        this.emitNextPlayer()
+        if (this.vsMode !== GAME_MODE_NETWORK) {
+          this.setTitleStatus()
+          Game.allowToMove('bot')
+          this.emitNextPlayer()
+        }
       })
     )
     this.addEventListeners()
@@ -29,6 +33,11 @@ export default class PlayerGame extends Game {
         this.player.move(direction[dir])
         event.preventDefault()
         this.chekGameElement()
+
+        const newState = this.board.currentState
+        if (this.vsMode === GAME_MODE_NETWORK) {
+          this.sendNewState(newState)
+        }
       }
     })
   }

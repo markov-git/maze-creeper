@@ -1,7 +1,9 @@
 import {Emitter} from '@core/Emitter'
 import BotGame from '@core/Game/BotGame'
 import PlayerGame from '@core/Game/PlayerGame'
+import NetworkGame from '@core/Game/NetworkGame'
 import {createLobby} from '@core/Multiplayer/Lobby'
+import {GAME_MODE_BOT, GAME_MODE_NETWORK, GAME_MODE_PLAYER} from './constants'
 
 const POPUP_TIMEOUT = 2000
 
@@ -36,29 +38,29 @@ class Main {
     $form.addEventListener('submit', e => {
       e.preventDefault()
       const {value: size} = $form.querySelector('input[name="size"]:checked')
-      this.runGame(+size, this.botMode.checked, this.autoMode.checked)
-
+      const gameMode = this.botMode.checked ? GAME_MODE_BOT : GAME_MODE_PLAYER
+      this.runGame(+size, gameMode, this.autoMode.checked)
     })
   }
 
-  runGame(size, botMode, autoMode) {  // (размер, с ботом, автогенерация)
-    if (botMode) {
+  runGame(size, gameMode, autoMode) {  // (размер, с ботом, автогенерация)
+    if (gameMode === GAME_MODE_BOT) {
       this.$optionContainer.style.display = 'none'
       this.$app.style.display = 'flex'
     }
 
-    if (botMode && autoMode) { // против бота с автогенерацией лабиринта
+    if (gameMode === GAME_MODE_BOT && autoMode) { // против бота с автогенерацией лабиринта
       this.createGameBoard({
         size: {cols: size, rows: size},
         random: autoMode,
         fogOfWar: true,
-        botMode: false
+        gameMode: GAME_MODE_PLAYER
       })
       this.createGameBoard({
         size: {cols: size, rows: size},
         random: autoMode,
         fogOfWar: false,
-        botMode: true
+        gameMode: GAME_MODE_BOT
       })
       this.$status.innerHTML = 'Игра началась. Ход игрока...'
       for (const game of this.games) {
@@ -68,26 +70,26 @@ class Main {
         // открыть возможность хода другого игрока
         this.games[1].makeBotMove()
       }))
-    } else if (botMode && !autoMode) { // против бота с ручной генерацией лабиринта
+    } else if (gameMode === GAME_MODE_BOT && !autoMode) { // против бота с ручной генерацией лабиринта
       this.emitter.subscribe('maze-finished', mazeMatrix => {
         this.$app.innerHTML = ''
         this.createGameBoard({
           size: {cols: size, rows: size},
           random: true,
           fogOfWar: true,
-          botMode: false
+          gameMode: GAME_MODE_PLAYER
         })
         this.createGameBoard({
           size: {cols: size, rows: size},
           random: true,
           fogOfWar: false,
-          botMode: true,
+          gameMode: GAME_MODE_BOT,
           mazeMatrix
         })
       })
 
       // need to refactor
-      const emit = function (mazeMatrix) {
+      const emit = (mazeMatrix) => {
         return this.emitter.emit('maze-finished', mazeMatrix)
       }
 
@@ -95,9 +97,9 @@ class Main {
         size: {cols: size, rows: size},
         random: autoMode,
         fogOfWar: true,
-        botMode: false,
+        gameMode: GAME_MODE_PLAYER,
         mazeMatrix: false,
-        emit: emit.bind(this)
+        emit
       })
       this.$status.innerHTML = 'Игра началась. Ход игрока...'
     } else {  // против другого игрока
@@ -122,7 +124,27 @@ class Main {
           $popupTitle.innerText = ''
         }, POPUP_TIMEOUT)
       }
-      createLobby(this.$optionContainer, this.$status, showPopup)
+      const initGame = (sendNewState, subscribeToState) => {
+        this.$app.innerHTML = ''
+        this.createGameBoard({
+          size: {cols: size, rows: size},
+          random: autoMode,
+          fogOfWar: true,
+          gameMode: GAME_MODE_PLAYER,
+          sendNewState,
+          vsMode: GAME_MODE_NETWORK
+        })
+        this.createGameBoard({
+          size: {cols: size, rows: size},
+          random: autoMode,
+          fogOfWar: false,
+          gameMode: GAME_MODE_NETWORK,
+          subscribeToState
+        })
+        this.$optionContainer.style.display = 'none'
+        this.$app.style.display = 'flex'
+      }
+      createLobby(this.$optionContainer, showPopup, initGame)
     }
   }
 
@@ -131,13 +153,13 @@ class Main {
     $div.classList.add('gameBoard')
     const $title = document.createElement('h2')
     $title.classList.add('unselectable')
-    $title.innerHTML = props.botMode ? 'Поле противника' : 'Твое поле'
+    $title.innerHTML = props.gameMode === GAME_MODE_BOT ? 'Поле противника' : 'Твое поле'
     const $canvas = document.createElement('canvas')
     $div.appendChild($title)
     $div.appendChild($canvas)
     this.$app.appendChild($div)
 
-    this.localTitles.push({node: $title, type: props.botMode ? 'bot' : 'player'})
+    this.localTitles.push({node: $title, type: props.gameMode === GAME_MODE_BOT ? 'bot' : 'player'})
 
     const emitNextPlayer = () => {
       this.emitter.emit('nextStep')
@@ -149,7 +171,7 @@ class Main {
 
     const setLocalStatus = (message = '', node = $title) => {
       if (message === '') {
-        node.innerHTML = props.botMode ? 'Твое поле' : 'Поле противника'
+        node.innerHTML = props.gameMode === GAME_MODE_BOT ? 'Твое поле' : 'Поле противника'
         node.style.color = '#ccc'
       } else {
         node.innerHTML = message
@@ -164,8 +186,20 @@ class Main {
       setLocalStatus,
       ...props
     }
-    game = props.botMode ? new BotGame(game) : new PlayerGame(game)
-
+    switch (props.gameMode) {
+      case GAME_MODE_BOT: {
+        game = new BotGame(game)
+        break
+      }
+      case GAME_MODE_PLAYER: {
+        game = new PlayerGame(game)
+        break
+      }
+      case GAME_MODE_NETWORK: {
+        game = new NetworkGame(game)
+        break
+      }
+    }
     this.games.push(game)
   }
 }

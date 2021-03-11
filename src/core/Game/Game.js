@@ -74,10 +74,10 @@ export class Game {
     })
     this.board.addPlayer(this.player)
     if (this.isReady) {
-      this.addElementToRandomPos('passiveExitImage')
+      this.addElementToRandomPos('passiveExitImage')  // есть шанс что итем не добавится
       this.addElementToRandomPos('keyImage')
       this.addElementToRandomPos('trapImage', 3)
-      this.addElementToRandomPos('ropeImage')
+      // this.addElementToRandomPos('ropeImage') не Добавлен функционал
     }
     ////////////////////////
     // Нужно сделать добавление событий при выполнении условия старта игры в мультиплеере и в ручной генерации лабиринта

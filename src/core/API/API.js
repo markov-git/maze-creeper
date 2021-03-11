@@ -36,14 +36,7 @@ export default class API {
   }
 
   unSubscribeToEvent(event) {
-    this.clearIntervals()
     this.eventHandlers.delete(event)
-  }
-
-  clearIntervals() {
-    if (this.refreshInterval) {
-      clearInterval(this.refreshInterval)
-    }
   }
 
   initListeners() {
@@ -53,8 +46,11 @@ export default class API {
       },
       connected: e => {
         console.log('Подключены к комнате', e.data)
-        //если все хорошо то отписываемся !!! не место !!!
         this.unSubscribeToEvent('rooms')
+        const handler = this.eventHandlers.get('connected')
+        if (handler) {
+          handler()
+        }
       },
       close: () => {
         console.log('connection closed')
@@ -67,8 +63,15 @@ export default class API {
         const handler = this.eventHandlers.get('message')
         handler(e.data)
       },
+      start: e => {
+        const showMessageHandler = this.eventHandlers.get('message')
+        showMessageHandler(e.data)
+        const startHandler = this.eventHandlers.get('start')
+        startHandler(this.sendNewState.bind(this))
+      },
       json: e => {
-        console.log('state: ', e.data)
+        const handler = this.eventHandlers.get('json')
+        if (handler) handler(JSON.parse(e.data))
       },
       key: async e => {
         this.key = e.data
@@ -87,12 +90,11 @@ export default class API {
           return room
         })
         const handler = this.eventHandlers.get('rooms')
-        if (handler) {
-          handler(this.rooms)
-        }
+        if (handler) handler(this.rooms)
       },
-      ping: e => {
-        console.log('ping from server', e.data)
+      ping: () => {
+        // just for dev
+        console.log('ping from server')
       }
     }
 
@@ -112,7 +114,6 @@ export default class API {
       this.name = name
       this.pass = pass
       this.nick = nick
-
       window.addEventListener('beforeunload', this.close.bind(this))
     } catch (e) {
       console.warn('error with creating room', e)
@@ -123,7 +124,6 @@ export default class API {
     try {
       this.checkKey()
       this.checkRoomId()
-      this.checkPass()
       await fetch(URLS.NEW_STATE, POST_OPTIONS({data: state, id: this.roomID, pass: this.pass, key: this.key}))
     } catch (e) {
       console.warn('error with sending state', e)
@@ -147,10 +147,6 @@ export default class API {
     } catch (e) {
       console.warn(e)
     }
-  }
-
-  checkPass() {
-    if (!this.pass) throw new Error('pass is undefined')
   }
 
   checkRoomId() {
