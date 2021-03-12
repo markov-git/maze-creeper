@@ -43,7 +43,7 @@
 
 .lobby__table thead tr th,
 .lobby__table tbody tr td {
-  width: calc((100% - 220px)/2);
+  width: calc((100% - 220px)/3);
   border-right: solid 3px #ccc;
   display: flex;
   align-items: center;

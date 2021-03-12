@@ -107,10 +107,10 @@ export default class API {
     return this.rooms.find(room => room.id === +id)
   }
 
-  async createRoom(name, pass, nick) {
+  async createRoom(name, pass, nick, size) {
     try {
       this.checkKey()
-      await fetch(URLS.NEW_ROOM, POST_OPTIONS({name, pass, nick, key: this.key}))
+      await fetch(URLS.NEW_ROOM, POST_OPTIONS({name, pass, nick, key: this.key, size}))
       this.name = name
       this.pass = pass
       this.nick = nick

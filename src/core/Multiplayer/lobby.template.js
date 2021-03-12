@@ -10,6 +10,7 @@ export function lobbyTemplate() {
         <th>№</th>
         <th>Название</th>
         <th>Игрок</th>
+        <th>Размер</th>
         <th>Пароль</th>
       </tr>
       </thead>
@@ -36,6 +37,7 @@ export function lobbyRowTemplates(games) {
       <td data-id="${game.id}">${game.id}</td>
       <td data-id="${game.id}">${game.name || `Игра ${game.id}`}</td>
       <td data-id="${game.id}">${game.nick || 'Безымянный'}</td>
+      <td data-id="${game.id}">${game.size}x${game.size}</td>
       <td data-id="${game.id}">${game.closed ? svg : ''}</td>
     </tr>
   `

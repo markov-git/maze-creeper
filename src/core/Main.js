@@ -144,7 +144,7 @@ class Main {
         this.$optionContainer.style.display = 'none'
         this.$app.style.display = 'flex'
       }
-      createLobby(this.$optionContainer, showPopup, initGame)
+      createLobby(this.$optionContainer, showPopup, initGame, size)
     }
   }
 

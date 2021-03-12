@@ -11,7 +11,7 @@ const api = new API()
 const CHOSEN_CLASS = 'chosen'
 let chosenGameId = null
 
-export function createLobby(domContainer, showPopup, initGame) {
+export function createLobby(domContainer, showPopup, initGame, size) {
   domContainer.innerHTML = lobbyTemplate()
   api.connectToServer()
   const btns = {
@@ -46,6 +46,7 @@ export function createLobby(domContainer, showPopup, initGame) {
   Object.keys(btns).forEach(key => {
     btns[key].addEventListener('click', () => actions[key]({
       dom: domContainer,
+      size,
       btns,
       showPopup,
       lobbyBody,
@@ -83,9 +84,9 @@ const apiHandlers = {
 }
 
 const actions = {
-  create: async ({dom, btns, lobbyBody, removeListener}) => {
+  create: async ({dom, size, btns, lobbyBody, removeListener}) => {
     try {
-      const ok = await initCreateModal(dom)
+      const ok = await initCreateModal(dom, size)
       if (ok) {
         removeListener()
         Object.values(btns).forEach(btn => btn.disabled = true)
@@ -121,7 +122,7 @@ const actions = {
 
 const cashedModals = {}
 
-function initCreateModal(dom) {
+function initCreateModal(dom, size) {
   if (!cashedModals.modalCreate) {
     dom.insertAdjacentHTML('beforeend', modalCreateTemplate())
     cashedModals.modalCreate = dom.querySelector('#modalCreate')
@@ -147,7 +148,7 @@ function initCreateModal(dom) {
       nameInput.value = ''
       nickInput.value = ''
       passwordInput.value = ''
-      await api.createRoom(name, password, nick)
+      await api.createRoom(name, password, nick, size)
       resolve(true)
     }, {once: true})
   }))
