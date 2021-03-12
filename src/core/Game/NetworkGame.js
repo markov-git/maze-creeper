@@ -12,7 +12,6 @@ export default class NetworkGame extends Game {
     this.boardWidth = this.columns * SHIELD_SIZE
     this.boardHeight = this.rows * SHIELD_SIZE
 
-
     this.board = new NetworkPainter({
       subscribeToState: this.subscribeToState,
       canvas: this.$canvas,
@@ -24,7 +23,6 @@ export default class NetworkGame extends Game {
       gameIsReady: true,
       fogOfWar: false
     })
-    this.board.on()
   }
 
   stateHandler(state) {
@@ -33,8 +31,5 @@ export default class NetworkGame extends Game {
     this.matrixOfGameElements = state.matrixOfGameElements
     this.player = state.player
     this.matrixOfFog = state.matrixOfFog
-  }
-
-  chekGameElement() {
   }
 }

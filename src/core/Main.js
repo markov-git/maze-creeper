@@ -124,10 +124,10 @@ class Main {
           $popupTitle.innerText = ''
         }, POPUP_TIMEOUT)
       }
-      const initGame = (sendNewState, subscribeToState) => {
+      const initGame = (sendNewState, newSize, subscribeToState) => {
         this.$app.innerHTML = ''
         this.createGameBoard({
-          size: {cols: size, rows: size},
+          size: {cols: newSize, rows: newSize},
           random: autoMode,
           fogOfWar: true,
           gameMode: GAME_MODE_PLAYER,
@@ -135,7 +135,7 @@ class Main {
           vsMode: GAME_MODE_NETWORK
         })
         this.createGameBoard({
-          size: {cols: size, rows: size},
+          size: {cols: newSize, rows: newSize},
           random: autoMode,
           fogOfWar: false,
           gameMode: GAME_MODE_NETWORK,

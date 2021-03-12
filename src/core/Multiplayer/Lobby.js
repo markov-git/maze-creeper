@@ -63,8 +63,8 @@ const apiHandlers = {
   connected: (_, {removeListener}) => {
     removeListener()
   },
-  start: (e, {initGame}) => {
-    initGame(e, cb => {
+  start: ({sendNewState, size}, {initGame}) => {
+    initGame(sendNewState, size, cb => {
       api.subscribeToEvent('json', cb)
     })
   },

@@ -65,9 +65,12 @@ export default class API {
       },
       start: e => {
         const showMessageHandler = this.eventHandlers.get('message')
-        showMessageHandler(e.data)
+        showMessageHandler('Игра началась!')
         const startHandler = this.eventHandlers.get('start')
-        startHandler(this.sendNewState.bind(this))
+        startHandler({
+          sendNewState: this.sendNewState.bind(this),
+          size: JSON.parse(e.data)
+        })
       },
       json: e => {
         const handler = this.eventHandlers.get('json')
@@ -78,12 +81,10 @@ export default class API {
         await this.getFreeRooms()
       },
       roomID: e => {
-        console.log('new roomID', e.data)
         this.roomID = e.data
       },
       rooms: e => {
         let counter = 1
-        console.log(e.data)
         this.rooms = JSON.parse(e.data).map(room => {
           if (!room.name) room.name = `Игра ${counter}`
           room.id = counter++

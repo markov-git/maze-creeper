@@ -1,5 +1,6 @@
 import {Painter} from '@core/painter/Painter'
 import {SHIELD_SIZE} from '@core/constants'
+import {Player} from '@core/Game/Player'
 
 export default class NetworkPainter extends Painter {
   constructor(props) {
@@ -7,46 +8,28 @@ export default class NetworkPainter extends Painter {
     this.shownInterfase = false
     this.gameIsReady = true
 
-    props.subscribeToState(state => {
+    let inited = false
+
+    props.subscribeToState(async state => {
       this.matrixOfMaze = state.matrixOfMaze
       this.pathMatrix = state.pathMatrix
       this.matrixOfGameElements = state.matrixOfGameElements
       this.player = state.player
+      this.player.color = Player.color
       this.matrixOfFog = state.matrixOfFog
-      this.isReady = true
+      if (!inited) {
+        await this.init()
+        inited = true
+      }
+      this.on()
     })
-    this.init()
   }
 
   on() {
-    if (this.isReady) {
-      this.prepare()
-      this.drawPlayer()
-      this.drawFog()
-    }
+    this.prepare()
+    this.drawPlayer()
+    this.drawFog()
     window.requestAnimationFrame(this.on.bind(this))
-  }
-
-  prepare() {
-    if (this.isReady) {
-      this.clear()
-      for (let y = 0; y < this.rows; y++) {
-        for (let x = 0; x < this.columns; x++) {
-          if (this.matrixOfMaze[y][x]) {
-            this.context.drawImage(this.images.wallImage,
-              x * SHIELD_SIZE, y * SHIELD_SIZE)
-          }
-          if (this.pathMatrix[y][x]) {
-            this.context.drawImage(this.images.pathImage,
-              x * SHIELD_SIZE, y * SHIELD_SIZE)
-          }
-          if (this.matrixOfGameElements[y][x] && this.gameIsReady) {
-            this.context.drawImage(this.images[this.matrixOfGameElements[y][x]],
-              x * SHIELD_SIZE, y * SHIELD_SIZE)
-          }
-        }
-      }
-    }
   }
 
   drawPlayer() {

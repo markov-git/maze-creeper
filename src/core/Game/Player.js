@@ -3,12 +3,14 @@ import {translateToCenter} from '@core/utils'
 import {fillMatrix, initMatrix} from '@core/painter/painter.matrixLogic'
 
 export class Player {
+  static color = 'red'
+
   constructor(prop) {
     Object.assign(this, prop)
     this.centerPosition = translateToCenter(this.position)
     this.foundedWalls = []
     this.matrixAI = initMatrix(fillMatrix(this.matrix, ''))
-    this.color = 'red'
+    this.color = Player.color
     this.testPosition()
   }
 
