@@ -1,4 +1,4 @@
-import {POPUP_TIMEOUT} from '@core/constants'
+import {POPUP_DELAY, POPUP_TIMEOUT} from '@core/constants'
 
 const $popup = document.querySelector('#popup')
 const $popupTitle = $popup.querySelector('h2')
@@ -32,7 +32,7 @@ export const showPopup = (type, message) => {
       isShownNow = false
     }, POPUP_TIMEOUT)
   } else {
-    setTimeout(() => showPopup(type, message), POPUP_TIMEOUT + 500)
+    setTimeout(() => showPopup(type, message), POPUP_TIMEOUT + POPUP_DELAY)
   }
 }
 

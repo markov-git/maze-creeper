@@ -110,6 +110,7 @@ class Main {
           fogOfWar: true,
           gameMode: GAME_MODE_PLAYER,
           sendNewState,
+          subscribeToState,
           vsMode: GAME_MODE_NETWORK
         })
         this.createGameBoard({

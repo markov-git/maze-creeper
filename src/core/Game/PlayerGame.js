@@ -1,6 +1,7 @@
 import {Game} from '@core/Game/Game'
 import direction from '@core/Game/game.directions'
 import {GAME_MODE_NETWORK} from '@core/constants'
+import {showPopup} from '@core/showPopup'
 
 export default class PlayerGame extends Game {
   constructor(props) {
@@ -17,6 +18,7 @@ export default class PlayerGame extends Game {
 
       nextPlayerAction = () => {
         this.setStatus('Вы наткнулись на стену, ход противника!')
+        showPopup('warn', 'Ход противника!')
         Game.forbidToMove('player')
       }
     } else {
@@ -46,6 +48,15 @@ export default class PlayerGame extends Game {
         this.sendNewStateToServer()
       }
     })
+
+    this.subscribeToState(async state => {
+      const enemyState = +state.gameState
+      if (enemyState && Game.availableToMove.player > 1) {
+        // Game.allowToMove('player')
+        showPopup('warn', 'Пропуск еще одного хода!')
+        this.sendNewStateToServer()
+      }
+    })
   }
 
   sendNewStateToServer() {
@@ -67,10 +78,13 @@ export default class PlayerGame extends Game {
   }
 
   trapAction() {
-    this.setLocalStatus(`Пропуск 2 ходов`)
+    showPopup('warn', 'Ловушка! Пропуск 2 ходов')
     Game.forbidToMove('player', 2)
-    Game.allowToMove('bot')
-    this.setStatus('Вы в ловушке - пропускаете 2 хода')
-    this.emitNextPlayer()
+    if (this.vsMode === GAME_MODE_NETWORK) {
+    } else {
+      Game.allowToMove('bot')
+      this.setStatus('Вы в ловушке - пропускаете 2 хода')
+      this.emitNextPlayer()
+    }
   }
 }

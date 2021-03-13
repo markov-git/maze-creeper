@@ -12,10 +12,6 @@ export default class NetworkPainter extends Painter {
 
     let inited = false
 
-    // this.unsubs.push(this.emitter.subscribe('wallFound', () => {
-    //   Game.allowToMove('player')
-    // }))
-
     props.subscribeToState(async state => {
       this.matrixOfMaze = state.matrixOfMaze
       this.pathMatrix = state.pathMatrix
@@ -23,13 +19,18 @@ export default class NetworkPainter extends Painter {
       this.player = state.player
       this.player.color = Player.color
       this.matrixOfFog = state.matrixOfFog
-      // if (state.event === 'wall') {
-      //   this.emitter.emit('wallFound')
-      // }
-      const enemyState = state.gameState
-      if (+enemyState > 0) {
+
+      const enemyState = +state.gameState
+      console.log('Enemy blocked steps: ', enemyState)
+      if (enemyState === 1) {
         Game.allowToMove('player')
-        showPopup('message', 'Ваш ход!')
+        if (Game.availableToMove.player === 0) {
+          showPopup('message', 'Ваш ход!')
+        }
+      } else if (enemyState === 2) {
+        Game.allowToMove('player')
+        // bug with double message about 2 steps .. must be 2 step then 1 step
+        showPopup('message', 'Противник пропускает 2 хода!')
       }
 
       if (!inited) {

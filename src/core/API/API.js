@@ -24,7 +24,8 @@ export default class API {
   }
 
   subscribeToEvent(event, cb) {
-    this.eventHandlers.set(event, cb)
+    const subscribers = this.eventHandlers.get(event) || []
+    this.eventHandlers.set(event, [...subscribers, cb])
   }
 
   unSubscribeToEvent(event) {
@@ -32,38 +33,38 @@ export default class API {
   }
 
   initListeners() {
-    const handlers = {
+    const action = {
       open: () => {
         console.log('connected to server')
       },
       connected: e => {
         this.unSubscribeToEvent('rooms')
-        const handler = this.eventHandlers.get('connected')
-        if (handler) handler()
+        const handlers = this.eventHandlers.get('connected') ?? []
+        handlers.forEach(fn => fn())
       },
       close: () => {
         console.log('connection closed')
       },
       error: e => {
-        const handler = this.eventHandlers.get('error')
-        handler(e.data)
+        const handlers = this.eventHandlers.get('error') ?? []
+        handlers.forEach(fn => fn(e.data))
       },
       message: e => {
-        const handler = this.eventHandlers.get('message')
-        handler(e.data)
+        const handlers = this.eventHandlers.get('message') ?? []
+        handlers.forEach(fn => fn(e.data))
       },
       start: e => {
-        const showMessageHandler = this.eventHandlers.get('message')
-        showMessageHandler('Игра началась!')
-        const startHandler = this.eventHandlers.get('start')
-        startHandler({
+        const handlers = this.eventHandlers.get('message') ?? []
+        handlers.forEach(fn => fn('Игра началась!'))
+        const startHandlers = this.eventHandlers.get('start') ?? []
+        startHandlers.forEach(fn => fn({
           sendNewState: this.sendNewState.bind(this),
           size: JSON.parse(e.data)
-        })
+        }))
       },
       json: e => {
-        const handler = this.eventHandlers.get('json')
-        if (handler) handler(JSON.parse(e.data))
+        const handlers = this.eventHandlers.get('json') ?? []
+        handlers.forEach(fn => fn(JSON.parse(e.data)))
       },
       key: async e => {
         this.key = e.data
@@ -79,12 +80,12 @@ export default class API {
           room.id = counter++
           return room
         })
-        const handler = this.eventHandlers.get('rooms')
-        if (handler) handler(this.rooms)
+        const handlers = this.eventHandlers.get('rooms') ?? []
+        handlers.forEach(fn => fn(this.rooms))
       }
     }
-    Object.keys(handlers).forEach(key => {
-      this.eventSource.addEventListener(key, handlers[key])
+    Object.keys(action).forEach(key => {
+      this.eventSource.addEventListener(key, action[key])
     })
   }
 

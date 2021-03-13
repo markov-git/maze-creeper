@@ -184,6 +184,8 @@ export class PainterBuilder extends Painter {
   }
 
   get currentState() {
+    console.log('Blocked steps: ', Game.availableToMove.player)
+
     return {
       matrixOfMaze: this.matrixOfMaze,
       pathMatrix: this.pathMatrix,
