@@ -112,7 +112,7 @@ p:hover {
     border-left: 10px solid darkgreen;
     box-shadow: 0 0 15px darkgreen;
     padding: 5px;
-    transition: all ease .5s;
+    transition: right ease .5s;
 }
 
 .popup__title {

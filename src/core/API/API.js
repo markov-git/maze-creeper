@@ -1,12 +1,4 @@
-const BASE_URL = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : ''
-const URLS = {
-  SSE_URL: `${BASE_URL}/sse/init`,
-  NEW_ROOM: `${BASE_URL}/sse/newRoom`,
-  NEW_STATE: `${BASE_URL}/sse/newState`,
-  GET_ROOMS: key => `${BASE_URL}/sse/info/${key}`,
-  CONNECT: `${BASE_URL}/sse/connect`,
-  REMOVE: `${BASE_URL}/sse/remove`
-}
+import URLS from './api.constants'
 
 const POST_OPTIONS = body => ({
   headers: {
@@ -45,12 +37,9 @@ export default class API {
         console.log('connected to server')
       },
       connected: e => {
-        console.log('Подключены к комнате', e.data)
         this.unSubscribeToEvent('rooms')
         const handler = this.eventHandlers.get('connected')
-        if (handler) {
-          handler()
-        }
+        if (handler) handler()
       },
       close: () => {
         console.log('connection closed')
@@ -92,13 +81,8 @@ export default class API {
         })
         const handler = this.eventHandlers.get('rooms')
         if (handler) handler(this.rooms)
-      },
-      ping: () => {
-        // just for dev
-        console.log('ping from server')
       }
     }
-
     Object.keys(handlers).forEach(key => {
       this.eventSource.addEventListener(key, handlers[key])
     })

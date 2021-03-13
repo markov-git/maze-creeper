@@ -6,12 +6,15 @@ import {
   modalCreateTemplate,
   statusRowTemplate
 } from './lobby.template'
+import {Game} from '@core/Game/Game'
+import {showPopup} from '@core/showPopup'
 
 const api = new API()
 const CHOSEN_CLASS = 'chosen'
 let chosenGameId = null
+let isFirstPlayer = false
 
-export function createLobby(domContainer, showPopup, initGame, size) {
+export function createLobby(domContainer, initGame, size) {
   domContainer.innerHTML = lobbyTemplate()
   api.connectToServer()
   const btns = {
@@ -37,7 +40,6 @@ export function createLobby(domContainer, showPopup, initGame, size) {
   lobbyBody.addEventListener('click', choseGameHandler)
   Object.keys(apiHandlers).forEach(key => {
     api.subscribeToEvent(key, e => apiHandlers[key](e, {
-      showPopup,
       lobbyBody,
       removeListener,
       initGame
@@ -48,7 +50,6 @@ export function createLobby(domContainer, showPopup, initGame, size) {
       dom: domContainer,
       size,
       btns,
-      showPopup,
       lobbyBody,
       removeListener
     }))
@@ -64,14 +65,15 @@ const apiHandlers = {
     removeListener()
   },
   start: ({sendNewState, size}, {initGame}) => {
+    Game.availableToMove.player = isFirstPlayer ? 0 : 1
     initGame(sendNewState, size, cb => {
       api.subscribeToEvent('json', cb)
     })
   },
-  error: (error, {showPopup}) => {
+  error: (error) => {
     showPopup('error', error)
   },
-  message: (message, {showPopup}) => {
+  message: (message) => {
     showPopup('message', message)
   },
   rooms: (games, {lobbyBody}) => {
@@ -91,8 +93,8 @@ const actions = {
         removeListener()
         Object.values(btns).forEach(btn => btn.disabled = true)
         api.unSubscribeToEvent('rooms')
+        isFirstPlayer = true
         lobbyBody.innerHTML = ''
-
         const startWaiting = new Date()
         setInterval(() => {
           const currentTime = new Date()
@@ -106,7 +108,7 @@ const actions = {
     }
   },
 
-  connect: async ({dom, showPopup}) => {
+  connect: async ({dom}) => {
     if (!chosenGameId) {
       showPopup('error', 'Сначала выберите игру')
     } else {

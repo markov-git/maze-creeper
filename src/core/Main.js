@@ -5,14 +5,11 @@ import NetworkGame from '@core/Game/NetworkGame'
 import {createLobby} from '@core/Multiplayer/Lobby'
 import {GAME_MODE_BOT, GAME_MODE_NETWORK, GAME_MODE_PLAYER} from './constants'
 
-const POPUP_TIMEOUT = 2000
-
 class Main {
   constructor() {
     this.$app = document.querySelector('#app')
     this.$status = document.querySelector('#status')
     this.$optionContainer = document.querySelector('#option-container')
-    this.$popup = document.querySelector('#popup')
 
     this.playerMode = this.$optionContainer.querySelector('#player-checkbox input')
     this.botMode = this.$optionContainer.querySelector('#bot-checkbox input')
@@ -103,29 +100,10 @@ class Main {
       })
       this.$status.innerHTML = 'Игра началась. Ход игрока...'
     } else {  // против другого игрока
-      const $popupTitle = this.$popup.querySelector('h2')
-      const showPopup = (type, message) => {
-        switch (type) {
-          case 'error': {
-            this.$popup.style.borderLeftColor = 'darkred'
-            this.$popup.style.boxShadow = '0 0 15px red'
-            break
-          }
-          default: {
-            this.$popup.style.borderLeftColor = 'darkgreen'
-            this.$popup.style.boxShadow = '0 0 15px darkgreen'
-          }
-        }
 
-        $popupTitle.innerText = message.toString()
-        this.$popup.style.right = '50px'
-        setTimeout(() => {
-          this.$popup.style.right = '-100%'
-          $popupTitle.innerText = ''
-        }, POPUP_TIMEOUT)
-      }
       const initGame = (sendNewState, newSize, subscribeToState) => {
         this.$app.innerHTML = ''
+
         this.createGameBoard({
           size: {cols: newSize, rows: newSize},
           random: autoMode,
@@ -144,7 +122,7 @@ class Main {
         this.$optionContainer.style.display = 'none'
         this.$app.style.display = 'flex'
       }
-      createLobby(this.$optionContainer, showPopup, initGame, size)
+      createLobby(this.$optionContainer, initGame, size)
     }
   }
 

@@ -37,15 +37,26 @@ export class Painter {
   async init() {
     this.initImages()
     await Promise.all(this.imageWaiter)
-    const canvasWidth = this.canvas.width
+    const canvasHeight = this.canvas.height
     const clientHeight = document.documentElement.clientHeight - 100
-    if (canvasWidth + 120 > clientHeight) {
+
+    const canvasWidth = this.canvas.width
+    const clientWidth = document.documentElement.clientWidth - 80
+
+    if (canvasHeight + 120 > clientHeight) {
       const newWidth = clientHeight - 120
-      const sc = newWidth / canvasWidth
-      this.canvas.width *= sc
-      this.canvas.height *= sc
-      this.context.scale(sc, sc)
+      const scale = newWidth / canvasHeight
+      this.canvas.width *= scale
+      this.canvas.height *= scale
+      this.context.scale(scale, scale)
+    } else if (canvasWidth + 100 > clientWidth / 2) {
+      const newWidth = (clientWidth - 100) / 2
+      const scale = newWidth / canvasWidth
+      this.canvas.width *= scale
+      this.canvas.height *= scale
+      this.context.scale(scale, scale)
     }
+
     this.on()
   }
 

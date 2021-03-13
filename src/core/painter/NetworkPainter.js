@@ -2,6 +2,7 @@ import {Painter} from '@core/painter/Painter'
 import {SHIELD_SIZE} from '@core/constants'
 import {Player} from '@core/Game/Player'
 import {Game} from '@core/Game/Game'
+import {showPopup} from '@core/showPopup'
 
 export default class NetworkPainter extends Painter {
   constructor(props) {
@@ -25,6 +26,11 @@ export default class NetworkPainter extends Painter {
       // if (state.event === 'wall') {
       //   this.emitter.emit('wallFound')
       // }
+      const enemyState = state.gameState
+      if (+enemyState > 0) {
+        Game.allowToMove('player')
+        showPopup('message', 'Ваш ход!')
+      }
 
       if (!inited) {
         await this.init()

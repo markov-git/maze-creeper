@@ -10,16 +10,27 @@ export default class PlayerGame extends Game {
 
   init() {
     super.init()
-    this.unsubs.push(
-      this.emitter.subscribe('wallFound', () => {
+    let nextPlayerAction
+
+    if (this.vsMode === GAME_MODE_NETWORK) {
+      this.sendNewStateToServer()
+
+      nextPlayerAction = () => {
         this.setStatus('Вы наткнулись на стену, ход противника!')
         Game.forbidToMove('player')
-        if (this.vsMode !== GAME_MODE_NETWORK) {
-          this.setTitleStatus()
-          Game.allowToMove('bot')
-          this.emitNextPlayer()
-        }
-      })
+      }
+    } else {
+      nextPlayerAction = () => {
+        this.setStatus('Вы наткнулись на стену, ход противника!')
+        Game.forbidToMove('player')
+        this.setTitleStatus()
+        Game.allowToMove('bot')
+        this.emitNextPlayer()
+      }
+    }
+
+    this.unsubs.push(
+      this.emitter.subscribe('wallFound', nextPlayerAction)
     )
     this.addEventListeners()
   }
@@ -32,13 +43,14 @@ export default class PlayerGame extends Game {
         this.player.move(direction[dir])
         event.preventDefault()
         this.chekGameElement()
-
-        if (this.vsMode === GAME_MODE_NETWORK) {
-          const newState = this.board.currentState
-          this.sendNewState(newState)
-        }
+        this.sendNewStateToServer()
       }
     })
+  }
+
+  sendNewStateToServer() {
+    const newState = this.board.currentState
+    this.sendNewState(newState)
   }
 
   exitAction(mode) {

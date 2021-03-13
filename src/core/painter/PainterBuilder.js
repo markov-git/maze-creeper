@@ -3,6 +3,7 @@ import {SHIELD_SIZE} from '@core/constants'
 import {aroundPos, freeSpaceMatrix, localCoords, testInside} from '@core/painter/painter.coordinats'
 import {fillMatrix, invertMatrix} from '@core/painter/painter.matrixLogic'
 import {calculateItems} from '@core/utils'
+import {Game} from '@core/Game/Game'
 
 export class PainterBuilder extends Painter {
   constructor(props) {
@@ -189,6 +190,7 @@ export class PainterBuilder extends Painter {
       matrixOfGameElements: this.matrixOfGameElements,
       player: {x: this.player.centerPosition.x, y: this.player.centerPosition.y},
       matrixOfFog: this.matrixOfFog,
+      gameState: Game.availableToMove.player
     }
   }
 }
