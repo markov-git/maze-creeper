@@ -52,6 +52,7 @@ export default class BotGame extends Game {
     } else {
       this.allowPlayerToMove()
     }
+    this.board.on()
   }
 
   exitAction(mode, pos) {

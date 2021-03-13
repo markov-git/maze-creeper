@@ -85,8 +85,6 @@ export class Game {
     this.unsubs.push(this.emitter.subscribe('move', player => {
       this.board.updatePlayerMeta(player)
     }))
-
-    this.board.on()
   }
 
   saveLocalTitles(titles) {
@@ -121,6 +119,7 @@ export class Game {
   }
 
   chekGameElement() {
+
     const currentPlayerPosition = this.player.positionIndexes
     const gameElement = this.board.getCurrentGameElement(currentPlayerPosition)
     switch (gameElement) {
@@ -160,6 +159,7 @@ export class Game {
         }
         break
     }
+    this.board.on()
   }
 
   exitAction() {

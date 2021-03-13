@@ -1,6 +1,7 @@
 import {Painter} from '@core/painter/Painter'
 import {SHIELD_SIZE} from '@core/constants'
 import {Player} from '@core/Game/Player'
+import {Game} from '@core/Game/Game'
 
 export default class NetworkPainter extends Painter {
   constructor(props) {
@@ -10,6 +11,10 @@ export default class NetworkPainter extends Painter {
 
     let inited = false
 
+    // this.unsubs.push(this.emitter.subscribe('wallFound', () => {
+    //   Game.allowToMove('player')
+    // }))
+
     props.subscribeToState(async state => {
       this.matrixOfMaze = state.matrixOfMaze
       this.pathMatrix = state.pathMatrix
@@ -17,6 +22,10 @@ export default class NetworkPainter extends Painter {
       this.player = state.player
       this.player.color = Player.color
       this.matrixOfFog = state.matrixOfFog
+      // if (state.event === 'wall') {
+      //   this.emitter.emit('wallFound')
+      // }
+
       if (!inited) {
         await this.init()
         inited = true
@@ -29,7 +38,6 @@ export default class NetworkPainter extends Painter {
     this.prepare()
     this.drawPlayer()
     this.drawFog()
-    window.requestAnimationFrame(this.on.bind(this))
   }
 
   drawPlayer() {

@@ -36,7 +36,6 @@ export class Painter {
 
   async init() {
     this.initImages()
-    console.log('init')
     await Promise.all(this.imageWaiter)
     const canvasWidth = this.canvas.width
     const clientHeight = document.documentElement.clientHeight - 100
@@ -47,7 +46,7 @@ export class Painter {
       this.canvas.height *= sc
       this.context.scale(sc, sc)
     }
-    this.prepare()
+    this.on()
   }
 
   prepare() {

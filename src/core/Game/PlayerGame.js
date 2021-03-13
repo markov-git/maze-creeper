@@ -6,7 +6,6 @@ export default class PlayerGame extends Game {
   constructor(props) {
     super(props)
     this.type = 'player'
-    // this.sendNewState = async sendNewState(state: Object)
   }
 
   init() {
@@ -34,8 +33,8 @@ export default class PlayerGame extends Game {
         event.preventDefault()
         this.chekGameElement()
 
-        const newState = this.board.currentState
         if (this.vsMode === GAME_MODE_NETWORK) {
+          const newState = this.board.currentState
           this.sendNewState(newState)
         }
       }

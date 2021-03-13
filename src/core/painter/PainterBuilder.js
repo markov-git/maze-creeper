@@ -38,7 +38,6 @@ export class PainterBuilder extends Painter {
         this.emitFinishMaze(this.matrixOfMaze)
       }
     }
-    window.requestAnimationFrame(this.on.bind(this))
   }
 
   drawInventory() {
@@ -189,7 +188,7 @@ export class PainterBuilder extends Painter {
       pathMatrix: this.pathMatrix,
       matrixOfGameElements: this.matrixOfGameElements,
       player: {x: this.player.centerPosition.x, y: this.player.centerPosition.y},
-      matrixOfFog: this.matrixOfFog
+      matrixOfFog: this.matrixOfFog,
     }
   }
 }
