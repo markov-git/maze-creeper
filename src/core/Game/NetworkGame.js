@@ -1,6 +1,7 @@
 import {Game} from '@core/Game/Game'
 import NetworkPainter from '@core/painter/NetworkPainter'
 import {SHIELD_SIZE} from '@core/constants'
+import {showPopup} from '@core/showPopup'
 
 export default class NetworkGame extends Game {
   constructor(props) {

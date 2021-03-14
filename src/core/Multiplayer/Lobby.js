@@ -64,9 +64,9 @@ const apiHandlers = {
   connected: (_, {removeListener}) => {
     removeListener()
   },
-  start: ({sendNewState, size}, {initGame}) => {
+  start: ({sendNewState, size, sendNewMessage}, {initGame}) => {
     Game.availableToMove.player = isFirstPlayer ? 0 : 1
-    initGame(sendNewState, size, cb => {
+    initGame(sendNewState, sendNewMessage, size, cb => {
       api.subscribeToEvent('json', cb)
     })
   },

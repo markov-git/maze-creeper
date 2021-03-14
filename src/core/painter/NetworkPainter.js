@@ -1,8 +1,6 @@
 import {Painter} from '@core/painter/Painter'
 import {SHIELD_SIZE} from '@core/constants'
 import {Player} from '@core/Game/Player'
-import {Game} from '@core/Game/Game'
-import {showPopup} from '@core/showPopup'
 
 export default class NetworkPainter extends Painter {
   constructor(props) {
@@ -19,19 +17,6 @@ export default class NetworkPainter extends Painter {
       this.player = state.player
       this.player.color = Player.color
       this.matrixOfFog = state.matrixOfFog
-
-      const enemyState = +state.gameState
-      console.log('Enemy blocked steps: ', enemyState)
-      if (enemyState === 1) {
-        Game.allowToMove('player')
-        if (Game.availableToMove.player === 0) {
-          showPopup('message', 'Ваш ход!')
-        }
-      } else if (enemyState === 2) {
-        Game.allowToMove('player')
-        // bug with double message about 2 steps .. must be 2 step then 1 step
-        showPopup('message', 'Противник пропускает 2 хода!')
-      }
 
       if (!inited) {
         await this.init()

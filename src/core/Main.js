@@ -101,7 +101,7 @@ class Main {
       this.$status.innerHTML = 'Игра началась. Ход игрока...'
     } else {  // против другого игрока
 
-      const initGame = (sendNewState, newSize, subscribeToState) => {
+      const initGame = (sendNewState, sendNewMessage, newSize, subscribeToState) => {
         this.$app.innerHTML = ''
 
         this.createGameBoard({
@@ -111,6 +111,7 @@ class Main {
           gameMode: GAME_MODE_PLAYER,
           sendNewState,
           subscribeToState,
+          sendNewMessage,
           vsMode: GAME_MODE_NETWORK
         })
         this.createGameBoard({

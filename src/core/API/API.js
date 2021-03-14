@@ -43,7 +43,11 @@ export default class API {
         handlers.forEach(fn => fn())
       },
       close: () => {
-        console.log('connection closed')
+        const handlers = this.eventHandlers.get('error') ?? []
+        handlers.forEach(fn => fn('Противник отключился'))
+        setTimeout(() => {
+          window.location.reload()
+        }, 1000)
       },
       error: e => {
         const handlers = this.eventHandlers.get('error') ?? []
@@ -59,6 +63,7 @@ export default class API {
         const startHandlers = this.eventHandlers.get('start') ?? []
         startHandlers.forEach(fn => fn({
           sendNewState: this.sendNewState.bind(this),
+          sendNewMessage: this.sendNewMessage.bind(this),
           size: JSON.parse(e.data)
         }))
       },
@@ -82,6 +87,10 @@ export default class API {
         })
         const handlers = this.eventHandlers.get('rooms') ?? []
         handlers.forEach(fn => fn(this.rooms))
+      },
+      finished: e => {
+        const handlers = this.eventHandlers.get('error') ?? []
+        handlers.forEach(fn => fn(e.data))
       }
     }
     Object.keys(action).forEach(key => {
@@ -103,6 +112,16 @@ export default class API {
       window.addEventListener('beforeunload', this.close.bind(this))
     } catch (e) {
       console.warn('error with creating room', e)
+    }
+  }
+
+  async sendNewMessage(message) {
+    try {
+      this.checkKey()
+      this.checkRoomId()
+      await fetch(URLS.NEW_MESSAGE, POST_OPTIONS({data: message, id: this.roomID, pass: this.pass, key: this.key}))
+    } catch (e) {
+      console.warn('error with sending state', e)
     }
   }
 

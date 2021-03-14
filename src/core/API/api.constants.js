@@ -5,5 +5,6 @@ export default {
   NEW_STATE: `${BASE_URL}/sse/newState`,
   GET_ROOMS: key => `${BASE_URL}/sse/info/${key}`,
   CONNECT: `${BASE_URL}/sse/connect`,
-  REMOVE: `${BASE_URL}/sse/remove`
+  REMOVE: `${BASE_URL}/sse/remove`,
+  NEW_MESSAGE: `${BASE_URL}/sse/message`
 }
